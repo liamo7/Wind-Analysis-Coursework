@@ -1,29 +1,34 @@
 {% load staticfiles %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Web Interface</title>
+<html>
+	<head>
+		<meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="{% static 'css/normalize.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
-</head>
-<body>
+        <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+        <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+        <link href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
 
-    <div class="container">
+	</head>
 
-        <div id="sidebar-container">
+	<body>
+
+		<div class="container">
+
             {% include 'webinterface/sidebar.html' %}
-        </div>
 
-        <div id="main-content-container">
             {% include 'webinterface/toolbar.html' %}
-        </div>
-
-    </div>
 
 
+		</div>
 
-    <script rel="script" href="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"/>
-</body>
+		<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+		<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+		<script src="{% static 'js/custom.js' %}"></script>
+	</body>
+
 </html>

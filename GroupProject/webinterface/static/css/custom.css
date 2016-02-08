@@ -1,93 +1,66 @@
-/*
+.container {
+	width: 100%;
+}
+
 #sidebar-container {
 
-    border: 1px solid black;
-    float: left;
-    height: 100%;
-    width: 250px;
+	float: left;
+	min-width: 25%;
+	width: 25%;
+	max-width: 50%;
+    min-height: 1000px;
 }
 
 #file-container {
-    height: 50%;
-    overflow: scroll;
-
+	width: 100%;
+	background-color: #c2c2c2;
+	min-height: 650px;
+	overflow: scroll;
 }
 
-#project-title {
-    text-align: center;
-    border: 1px solid black;
-    padding-top: 5px;
-    padding-bottom: 5px;
+#file-container h3 {
+	text-align: center;
+	margin: 0;
+	padding: 14px;
+	border: 1px solid black;
+}
+
+#file-view-container {
+	width: 100%;
+	height: 500px;
 }
 
 #metadata-container {
-    height: 50%;
-    border: 1px solid black;
-    overflow: scroll;
-
-}
-
-#toolbar-container {
-    border: 1px solid red;
-    height: 100px;
-}*/
-
-.container {
-    overflow: hidden;
+	width: 100%;
+	background-color: #cccccc;
+	min-height: 350px;
+	overflow: scroll;
 }
 
 #main-content-container {
-    overflow: hidden;
-    border: 1px solid red;
-    height: 1000px;
-}
-
-#sidebar-container {
-    width: 250px;
-    float: left;
-    border: 1px solid black;
-}
-
-#file-container {
-    height: 50%;
-    overflow-y: scroll;
-    background-color: #ccc;;
-}
-
-#project-title {
-    text-align: center;
-    border: 1px solid black;
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
-#metadata-container {
-    height: 250px;
-    border: 1px solid black;
-    overflow: scroll;
-    background-color: #ccc;;
-
+	margin-left: 25%;
+	width: 75%;
+    min-height: 1000px;
+	border: 1px solid red;
 }
 
 #toolbar-container {
-    width: 100%;
-    height: 40px;
-    background: #c2c2c2;
+	width: 100%;
+	height: 50px;
+	background-color: #cccccc;
 }
 
-#toolbar-container .toolbar-list {
-    list-style-type: none;
-    margin: 0;
+#toolbar-container ul {
+	list-style-type: none;
+	margin: 0;
     padding: 0;
 }
 
-#toolbar-container .toolbar-list li {
-    display: inline-block;
-    padding-top: 11px;
-    padding-bottom: 11px;
-    margin-left: 2px;
-    background-color: #a7a7a7;
-
-    border-left: 2px solid grey;
-    border-right: 2px solid grey;
+#toolbar-container ul li {
+	margin: 0;
+	background-color: #cccccc;
+	border: 2px solid #c2c2c2;
+	padding: 14px;
+	display: block;
+	float: left;
 }
