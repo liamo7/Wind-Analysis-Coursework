@@ -3,22 +3,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Web Interface</title>
+
+    <link rel="stylesheet" href="{% static 'css/normalize.css' %}" />
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
-    {% block head %}
-    {% endblock %}
 </head>
 <body>
-    {% block body %}
-    {% endblock %}
 
-    <div id="sidebar-container">
+    <div class="container">
 
+        <div id="sidebar-container">
+            {% include 'webinterface/sidebar.html' %}
+        </div>
+
+        <div id="main-content-container">
+            {% include 'webinterface/toolbar.html' %}
+        </div>
 
     </div>
 
-    <div id="menu-toolbar">
 
-    </div>
 
+    <script rel="script" href="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"/>
 </body>
 </html>
