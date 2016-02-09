@@ -1,0 +1,18 @@
+To allow the templates to work and show different data depending on which project/anaylis you are viewing
+certain named parameters must be used.
+
+These are primarily used within templates and in views.py
+They allow the data to be passed to the templates from the code and should be kept concise.
+
+WILL BE UPDATED AS MORE ARE ADDED.
+
+Project Related:
+
+'project'  - One single object instance of a project
+'projects' - List of projects that are in the db
+
+
+Analysis Related:
+
+'analysis' -  One single object instance of a analysis
+'analyses' - List of analyses that are in the db

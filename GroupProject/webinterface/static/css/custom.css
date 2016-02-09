@@ -8,13 +8,13 @@
 	min-width: 25%;
 	width: 25%;
 	max-width: 50%;
-    min-height: 1000px;
+    min-height: 100vh;
 }
 
 #file-container {
 	width: 100%;
 	background-color: #c2c2c2;
-	min-height: 650px;
+	min-height: 65vh;
 	overflow: scroll;
 }
 
@@ -27,13 +27,13 @@
 
 #file-view-container {
 	width: 100%;
-	height: 500px;
+	/*height: 500px;*/
 }
 
 #metadata-container {
 	width: 100%;
 	background-color: #cccccc;
-	min-height: 350px;
+	min-height: 35vh;
 	overflow: scroll;
 }
 
@@ -63,4 +63,8 @@
 	padding: 14px;
 	display: block;
 	float: left;
+}
+
+#toolbar-container ul li:hover {
+    background-color: #c2c2c2;
 }

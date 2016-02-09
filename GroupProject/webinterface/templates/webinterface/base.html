@@ -21,9 +21,14 @@
 
             {% include 'webinterface/sidebar.html' %}
 
-            {% include 'webinterface/toolbar.html' %}
 
+            <div id="main-content-container">
+                {% include 'webinterface/toolbar.html' %}
 
+                {% for p in projects %}
+                    <a href="{% url 'projectView' title=p.title %}">{{ p.title }}</a>
+                {% endfor %}
+            </div>
 		</div>
 
 		<script src="http://code.jquery.com/jquery-1.10.2.js"></script>

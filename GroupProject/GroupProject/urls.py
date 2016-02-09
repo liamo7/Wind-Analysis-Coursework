@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from webinterface import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', include('webinterface.urls')),
 
+    url(r'^$', views.main),
+
+    url(r'^project/(?P<title>[A-Z-a-z-0-9]+)/$', views.projectView, name='projectView'),
 ]

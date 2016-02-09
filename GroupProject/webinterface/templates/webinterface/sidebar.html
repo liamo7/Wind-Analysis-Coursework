@@ -1,44 +1,14 @@
 <div id="sidebar-container" class="ui-widget-content">
 
     <div id="file-container">
-        <h3>Project Title</h3>
+        <h3>{{ project.title }}</h3>
 
         <div id="file-view-container">
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
-            <p>FSDdsaadsdasdsadsa daa sdas ads dsa ads dsadsa das dasdsa dsa<p>
+            <ul>
+                {% for a in analyses %}
+                    <li class="project">{{ a.title }}</li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 
