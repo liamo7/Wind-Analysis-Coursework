@@ -4,17 +4,17 @@
 
 #sidebar-container {
 
-	float: left;
+    float: left;
 	min-width: 25%;
 	width: 25%;
 	max-width: 50%;
-    min-height: 100vh;
+    height: 1200px;
 }
 
 #file-container {
 	width: 100%;
 	background-color: #c2c2c2;
-	min-height: 65vh;
+	height: 750px;
 	overflow: scroll;
 }
 
@@ -30,17 +30,22 @@
 	/*height: 500px;*/
 }
 
+#file-view-container .file-item {
+	list-style-type: none;
+	padding: 10px;
+}
+
 #metadata-container {
 	width: 100%;
 	background-color: #cccccc;
-	min-height: 35vh;
+	height: 450px;
 	overflow: scroll;
 }
 
 #main-content-container {
 	margin-left: 25%;
 	width: 75%;
-    min-height: 1000px;
+   	height: 1150px;
 	border: 1px solid red;
 }
 

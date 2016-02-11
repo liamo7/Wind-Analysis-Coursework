@@ -22,5 +22,6 @@ urlpatterns = [
 
     url(r'^$', views.main),
 
-    url(r'^project/(?P<title>[A-Z-a-z-0-9]+)/$', views.projectView, name='projectView'),
+    url(r'^project/(?P<title>[A-Z-a-z-0-9]+)/$', views.project_view, name='project_view'),
+    url(r'^project/create', views.create_project, name='create_project'),
 ]

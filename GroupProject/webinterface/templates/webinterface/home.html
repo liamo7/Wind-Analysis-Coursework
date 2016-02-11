@@ -1,0 +1,4 @@
+
+    {% for p in projects %}
+        <a href="{% url 'project_view' title=p.title %}">{{ p.title }}</a>
+    {% endfor %}
