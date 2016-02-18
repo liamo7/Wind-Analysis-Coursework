@@ -5,6 +5,10 @@ from .analyses import get_analyses_from_project
 from GroupProject import settings
 from .forms import ProjectForm
 
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from rest_framework import permissions, viewsets
+from .serializers import ProjectSerializer, AnalysisSerializer
+
 
 def main(request):
 
@@ -17,6 +21,9 @@ def main(request):
 
     return render(request, 'webinterface/base.html', context)
 
+def testmain(request):
+
+    return render(request, 'webinterface/testbase.html')
 
 def print_all_files_in_dir():
     import os

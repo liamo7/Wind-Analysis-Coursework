@@ -1,0 +1,24 @@
+{% load staticfiles %}
+
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="{% static "bootstrap/dist/css/bootstrap.css" %}">
+</head>
+<body ng-app="{% block ng_app %}WebInterfaceApp{% endblock %}">
+<div class="content" ng-controller="{% block ng_controller %}AppController{% endblock %}">{% block content %}
+{% verbatim %}
+    <div class="panel" ng-repeat="project in projects">
+        <div class="panel-heading clearfix">
+            <h3 class="panel-title">{{ project.title }}</h3>
+            <author class="pull-right">{{ post.author.username }}</author>
+        </div>
+        <p class="well">{{ post.body }}</p>
+    </div>
+{% endverbatim %}
+{% endblock %}</div>
+<script src="{% static "js/underscore.js" %}"></script>
+<script src="{% static "js/angular.js" %}"></script>
+<script src="{% static "js/angular-resource.js" %}"></script>
+<script src="{% static "js/script.js" %}"></script>
+</body>
+</html>
