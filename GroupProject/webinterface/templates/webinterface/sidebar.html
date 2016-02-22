@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 <div id="sidebar-container" class="ui-widget-content">
 
 
@@ -12,6 +14,23 @@
                     <li class="file-item">
                          <a>siteCalibration(2 files) [optional]</a>
                     </li>
+
+                <div ng-switch on="sideBarMode">
+
+                    <div ng-switch-when="project-list">
+                        <li class="file-item" ng-repeat="project in projects" >
+                            <a ng-click="setSideBarMode('project-obj');loadProjectAnalyses('{[{ project.title }]}')">{[{ project.title }]}</a>
+                        </li>
+                    </div>
+
+                    <div ng-switch-when="project-obj">
+                        <li class="file-item" ng-repeat="analysis in analyses" >
+                            <a ng-click="">{[{ analysis.title }]}</a>
+                        </li>
+                    </div>
+
+                </div>
+<!--
                 {% for data in sidebar_data %}
                     <li class="file-item">
                         {% if sidebar_object == 'project-list' %}
@@ -21,6 +40,7 @@
                         {% endif %}
                     </li>
                 {% endfor %}
+-->
             </ul>
         </div>
     </div>

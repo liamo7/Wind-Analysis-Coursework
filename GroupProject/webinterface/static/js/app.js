@@ -20,6 +20,7 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
     };
     $scope.loadProjects();
 
+
     $scope.loadAnalyses = function() {
             $scope.analyses = $http.get('/api/v1/analyses/').then(function(response){
             return response.data;
@@ -27,4 +28,16 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
     };
     $scope.loadAnalyses();
 
+    $scope.loadProjectAnalyses = function(projectTitle) {
+            $scope.analyses = $http.get('/api/v1/project-analyses/' + projectTitle).then(function(response){
+            return response.data;
+        });
+    };
+
+
+    $scope.setSideBarMode = function(sideBarMode){
+        $scope.sideBarMode = sideBarMode;
+    }
+
+    $scope.setSideBarMode("project-list");
 });
