@@ -1,10 +1,17 @@
 <div id="sidebar-container" class="ui-widget-content">
 
+
+    <h3 id="sidebar_title">{{ sidebar_title }}</h3>
     <div id="file-container">
-        <h3>{{ sidebar_title }}</h3>
 
         <div id="file-view-container">
             <ul>
+                    <li class="file-item">
+                         <a>preProcessing</a>
+                    </li>
+                    <li class="file-item">
+                         <a>siteCalibration(2 files) [optional]</a>
+                    </li>
                 {% for data in sidebar_data %}
                     <li class="file-item">
                         {% if sidebar_object == 'project-list' %}
@@ -19,6 +26,6 @@
     </div>
 
     <div id="metadata-container">
-
+        <p>-Metadata here-</p>
     </div>
 </div>

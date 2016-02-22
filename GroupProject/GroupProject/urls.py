@@ -39,12 +39,3 @@ urlpatterns = [
 
 
 ]
-"""
-
-    url(r'^test/project/$', ProjectList.as_view(), name='project-list'),
-    url(r'^test/project/(?P<title>.+)/$', ProjectDetail.as_view(), name='project-detail'),
-
-    url(r'^test/project-analysis/(?P<title>.+)/$', ProjectAnalysisList.as_view(), name='project-analysis-list'),
-    url(r'^test/analysis/$', AnalysisList.as_view(), name='analysis-list'),
-    url(r'^test/analysis/(?P<title>.+)/$', AnalysisDetail.as_view(), name='analysis-detail')
-"""
