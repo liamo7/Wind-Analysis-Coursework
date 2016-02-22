@@ -1,10 +1,12 @@
-from rest_framework import generics, permissions
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
 from .serializers import ProjectSerializer, AnalysisSerializer
 from .models import Project, Analysis
 
 
-class ProjectList(generics.ListCreateAPIView):
+class ProjectList(viewsets.ModelViewSet):
     model = Project
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
@@ -12,16 +14,19 @@ class ProjectList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
+    def list(self, request):
+        queryset = Project.objects.all()
+        serializer = ProjectSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-class ProjectDetail(generics.RetrieveAPIView):
-    model = Project
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
-    lookup_field = 'title'
+    def retrieve(self, request, pk=None):
+        queryset = Project.objects.all()
+        project = get_object_or_404(queryset, title=pk)
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data)
 
 
-
-class AnalysisList(generics.ListCreateAPIView):
+class AnalysisList(viewsets.ModelViewSet):
     model = Analysis
     serializer_class = AnalysisSerializer
     queryset = Analysis.objects.all()
@@ -29,22 +34,28 @@ class AnalysisList(generics.ListCreateAPIView):
         permissions.AllowAny
     ]
 
+    def list(self, request):
+        queryset = Analysis.objects.all()
+        serializer = AnalysisSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-class AnalysisDetail(generics.RetrieveAPIView):
+    def retrieve(self, request, pk=None):
+        queryset = Analysis.objects.all()
+        analysis = get_object_or_404(queryset, title=pk)
+        serializer = AnalysisSerializer(analysis)
+        return Response(serializer.data)
+
+
+class ProjectAnalysisList(viewsets.ModelViewSet):
     model = Analysis
     serializer_class = AnalysisSerializer
     queryset = Analysis.objects.all()
-    lookup_field = 'title'
-
-
-#TODO get analysis from project
-class ProjectAnalysisList(generics.RetrieveAPIView):
-    model = Analysis
-    serializer_class = AnalysisSerializer
     permission_classes = [
         permissions.AllowAny
     ]
 
-    def get_queryset(self):
-        return Analysis.objects.filter(project_title=self.kwargs['title'])
+    def retrieve(self, request, pk=None):
+        project = get_object_or_404(Project.objects.all(), title=pk)
+        serializer = AnalysisSerializer(Analysis.objects.filter(project=project), many=True)
+        return Response(serializer.data)
 

@@ -21,9 +21,10 @@ def main(request):
 
     return render(request, 'webinterface/base.html', context)
 
-def testmain(request):
 
+def testmain(request):
     return render(request, 'webinterface/testbase.html')
+
 
 def print_all_files_in_dir():
     import os

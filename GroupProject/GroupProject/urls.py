@@ -16,7 +16,14 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from webinterface import views
-from webinterface.api import ProjectList, ProjectDetail, AnalysisList, AnalysisDetail, ProjectAnalysisList
+from rest_framework import routers
+from webinterface.api import ProjectList, AnalysisList, ProjectAnalysisList
+
+router = routers.SimpleRouter()
+router.register(r'^projects', ProjectList, base_name='project-list')
+router.register(r'^analyses', AnalysisList, base_name='analysis-list')
+router.register(r'^project-analyses', ProjectAnalysisList)
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -28,6 +35,11 @@ urlpatterns = [
 
 
     url(r'^test/$', views.testmain),
+    url(r'^api/v1/', include(router.urls)),
+
+
+]
+"""
 
     url(r'^test/project/$', ProjectList.as_view(), name='project-list'),
     url(r'^test/project/(?P<title>.+)/$', ProjectDetail.as_view(), name='project-detail'),
@@ -35,5 +47,4 @@ urlpatterns = [
     url(r'^test/project-analysis/(?P<title>.+)/$', ProjectAnalysisList.as_view(), name='project-analysis-list'),
     url(r'^test/analysis/$', AnalysisList.as_view(), name='analysis-list'),
     url(r'^test/analysis/(?P<title>.+)/$', AnalysisDetail.as_view(), name='analysis-detail')
-
-]
+"""
