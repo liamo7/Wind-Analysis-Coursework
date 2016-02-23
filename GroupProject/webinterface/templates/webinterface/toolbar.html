@@ -1,7 +1,13 @@
-    <nav id="toolbar-container" role="navigation">
+    <nav  id="toolbar-container" role="navigation">
         <ul>
+            <div ng-switch on="sideBarMode">
+                <a ng-switch-when="project-obj" href="" ng-click="setSideBarMode('project-list')"><li title="{[{ sideBarMode }]}"><i class="fa fa-level-up"></i></li></a>
+            </div>
+
             <a href="{% url 'create_project' %}"><li title="New File"><i class="fa fa-file"></i></li></a>
+
             <li title="Open Folder"><i class="fa fa-folder-open"></i></li>
+
             <li title="Save"><i class="fa fa-floppy-o"></i></li>
         </ul>
     </nav>
