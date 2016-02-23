@@ -1,18 +1,18 @@
 from .models import Analysis
 
 
-def get_all_analyses():
+def getAllAnalyses():
     return Analysis.objects.all()
 
 
-def get_analysis_from_title(title):
+def getAnalysisFromTitle(title):
     return Analysis.objects.get(title=title)
 
 
-def get_analyses_from_project(project):
+def getAnalysisFromProject(project):
     return Analysis.objects.filter(project=project)
 
 
-def create_analysis(title):
+def createAnalysis(title):
     analysis = Analysis.objects.create(title=title).save()
     return analysis.title

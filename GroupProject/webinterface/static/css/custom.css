@@ -45,7 +45,7 @@
 #main-content-container {
 	margin-left: 25%;
 	width: 75%;
-   	height: 90vh;
+   	height: 100vh;
 	border: 1px solid red;
 }
 
@@ -75,6 +75,5 @@
 }
 
 #sidebar_title {
-	/*background-color: #cccccc;*/
 	text-align: center;
 }

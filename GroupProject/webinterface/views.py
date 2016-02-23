@@ -1,13 +1,7 @@
 from django.shortcuts import render, redirect
-from .models import Project, Analysis
-from .projects import get_projects, get_project_by_title, create_project_item
-from .analyses import get_analyses_from_project
-from GroupProject import settings
+from .projects import *
+from .analyses import getAnalysisFromProject
 from .forms import ProjectForm
-
-from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from rest_framework import permissions, viewsets
-from .serializers import ProjectSerializer, AnalysisSerializer
 
 
 def main(request):
@@ -16,7 +10,7 @@ def main(request):
         'page': 'home',
         'sidebar_title': 'Project List',
         'sidebar_object': 'project-list',
-        'sidebar_data': get_projects()
+        'sidebar_data': getAllProjects()
     }
 
     return render(request, 'webinterface/base.html', context)
@@ -26,17 +20,10 @@ def testmain(request):
     return render(request, 'webinterface/testbase.html')
 
 
-def print_all_files_in_dir():
-    import os
-    for r, d, f in os.walk(settings.BASE_DIR):
-        for file in f:
-            print(os.path.join(settings.BASE_DIR, file))
-
-
 def project_view(request, title):
 
-    project = get_project_by_title(title)
-    analyses = get_analyses_from_project(project)
+    project = getProjectByTitle(title)
+    analyses = getAnalysisFromProject(project)
 
     context = {
         'page': 'project-view',
@@ -54,7 +41,7 @@ def create_project(request):
         form = ProjectForm(request.POST)
 
         if form.is_valid():
-            title = create_project_item(form.cleaned_data['title'])
+            title = createProjectItem(form.cleaned_data['title'])
             return redirect('project_view', title=title)
     else:
         form = ProjectForm()
@@ -63,7 +50,7 @@ def create_project(request):
         'page': 'create-project',
         'sidebar_title': 'Project List',
         'sidebar_object': 'project-list',
-        'sidebar_data': get_projects(),
+        'sidebar_data': getAllProjects(),
         'form': form
     }
 
