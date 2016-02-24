@@ -1,9 +1,13 @@
-from django.forms import forms, ModelForm
+from django import forms
 from .models import Project, Analysis
 
 
-class ProjectForm(ModelForm):
+class ProjectForm(forms.ModelForm):
 
     class Meta:
         model = Project
         fields = ['title']
+
+
+class UploadFileForm(forms.Form):
+    file = forms.FileField(label='select a file')

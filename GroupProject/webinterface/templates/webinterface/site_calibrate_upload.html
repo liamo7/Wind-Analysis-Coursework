@@ -1,0 +1,8 @@
+<form method="POST" action="{% url 'test_upload' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>{{ form.non_field_errors }}</p>
+    <p>{{ form.file.label_tag }}</p>
+    <p>{{ form.file.errors }}
+        {{ form.file }}
+    </p>    <input type="submit" value="Upload">
+</form>

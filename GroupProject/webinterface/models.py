@@ -1,11 +1,20 @@
 from django.db import models
 
 
+class ProjectManager(models.Manager):
+    def getUploadPath(self, filename):
+        return '{0}\sitecalibration\{1}'.format(self.title, filename)
+
+
 class Project(models.Model):
 
     title = models.CharField(max_length=64, unique=True, blank=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+
+    site_calibration_allowed = models.BooleanField(default=False)
+
+    site_calibration_file = models.FileField(upload_to=ProjectManager.getUploadPath)
 
     class Meta:
         verbose_name = 'Project'

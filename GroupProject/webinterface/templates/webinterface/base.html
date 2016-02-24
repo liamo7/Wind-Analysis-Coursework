@@ -32,6 +32,8 @@
 
                 {% if page == 'create-project' %}
                     {% include 'webinterface/project-create.html' %}
+                {% elif page == 'upload' %}
+                    {% include 'webinterface/site_calibrate_upload.html' %}
                 {% elif page == 'home' %}
                     {% include 'webinterface/home.html' %}
                 {% endif %}
