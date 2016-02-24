@@ -1,5 +1,5 @@
 from django.db import models
-
+from .utils import *
 
 class ProjectManager(models.Manager):
     def getUploadPath(self, filename):
@@ -15,6 +15,10 @@ class Project(models.Model):
     site_calibration_allowed = models.BooleanField(default=False)
 
     site_calibration_file = models.FileField(upload_to=ProjectManager.getUploadPath)
+
+    @property
+    def dataFilePaths(self):
+        return printAllFilesInDirectory()
 
     class Meta:
         verbose_name = 'Project'

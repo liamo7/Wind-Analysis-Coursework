@@ -18,11 +18,9 @@ urlpatterns = [
     url(r'^$', views.main),
 
     url(r'^project/(?P<title>[A-Z-a-z-0-9]+)/$', views.project_view, name='project_view'),
-    url(r'^project/create', views.create_project, name='create_project'),
 
     url(r'^upload-site-calibration', views.test_upload, name='test_upload'),
 
-    url(r'^test/$', views.testmain),
     url(r'^api/v1/', include(router.urls)),
 ]
 

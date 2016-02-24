@@ -28,8 +28,12 @@
 
             {% include 'webinterface/toolbar.html' %}
 
-            <div id="main-content-container">
+            <div id="main-content-container" ng-switch on="mainContentState">
 
+                <div ng-switch-when="project-create">
+                    {% include 'webinterface/project-create.html' %}
+                </div>
+<!--
                 {% if page == 'create-project' %}
                     {% include 'webinterface/project-create.html' %}
                 {% elif page == 'upload' %}
@@ -37,6 +41,7 @@
                 {% elif page == 'home' %}
                     {% include 'webinterface/home.html' %}
                 {% endif %}
+-->
 
             </div>
 

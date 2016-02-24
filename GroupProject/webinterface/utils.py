@@ -4,9 +4,11 @@ import os
 
 
 def printAllFilesInDirectory():
+    list = []
     for r, d, f in os.walk(settings.BASE_DIR):
         for file in f:
-            print(os.path.join(settings.BASE_DIR, file))
+            list.append(os.path.join(settings.BASE_DIR, file))
+    return list
 
 
 def readFromCsv(pathToFile):

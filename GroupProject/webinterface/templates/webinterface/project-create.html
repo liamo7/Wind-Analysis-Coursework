@@ -1,6 +1,11 @@
-<form method="POST" action="{% url 'create_project' %}">
+
+<form name="my_form" method="POST" action="">
     {% csrf_token %}
     <label for="title">Project Title</label>
-    <input id="title" type="text" name="title">
-    <input type="submit" value="Create">
+    <input ng-model="title" type="text" name="title">
+
+    <label for="siteCalibration">Site Calibration</label>
+    <input ng-model="siteCalibration" type="checkbox" name="siteCalibration">
+
+    <input ng-click="createProject('my_form')" type="submit" value="Create">
 </form>

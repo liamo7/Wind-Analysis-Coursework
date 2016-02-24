@@ -3,7 +3,7 @@
 <div id="sidebar-container" class="ui-widget-content">
 
 
-    <h3 id="sidebar_title">{{ sidebar_title }}</h3>
+    <h3 id="sidebar_title">{[{ sideBarTitle }]}</h3>
     <div id="file-container">
 
         <div id="file-view-container">
@@ -16,11 +16,8 @@
                     </li>
 
                 <div ng-switch on="sideBarMode">
-
                     <div ng-switch-when="project-list">
-                        <li class="file-item" ng-repeat="project in projects" >
-                            <a ng-click="setSideBarMode('project-obj');loadProjectAnalyses('{[{ project.title }]}')">{[{ project.title }]}</a>
-                        </li>
+                        {% include "webinterface/partials/projectList.html" %}
                     </div>
 
                     <div ng-switch-when="project-obj">
@@ -30,22 +27,14 @@
                     </div>
 
                 </div>
-<!--
-                {% for data in sidebar_data %}
-                    <li class="file-item">
-                        {% if sidebar_object == 'project-list' %}
-                         <a href="{% url 'project_view' data.title %}">{{ data.title }}</a>
-                        {% elif sidebar_object == 'project-obj' %}
-                            <a href="#">{{ data.title }}</a>
-                        {% endif %}
-                    </li>
-                {% endfor %}
--->
+
             </ul>
         </div>
     </div>
 
     <div id="metadata-container">
-        <p>-Metadata here-</p>
+        <p><b>{[{currProject.title}]}</b></p>
+        <p>Created: {[{currProject.date_created | date}]}</p>
+        <p>Last modified: {[{currProject.date_updated | date}]}</p>
     </div>
 </div>

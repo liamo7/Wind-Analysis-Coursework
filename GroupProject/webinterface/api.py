@@ -1,6 +1,11 @@
 from rest_framework import viewsets, permissions
+from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from .projects import *
+from .analyses import getAnalysisFromProject
+from .forms import ProjectForm, UploadFileForm
+from rest_framework.decorators import api_view
 
 from .serializers import ProjectSerializer, AnalysisSerializer
 from .models import Project, Analysis
@@ -40,10 +45,14 @@ class AnalysisList(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        queryset = Analysis.objects.all()
-        analysis = get_object_or_404(queryset, title=pk)
-        serializer = AnalysisSerializer(analysis)
+
+        if request.method == 'GET':
+            queryset = Analysis.objects.all()
+            analysis = get_object_or_404(queryset, title=pk)
+            serializer = AnalysisSerializer(analysis)
+
         return Response(serializer.data)
+
 
 
 class ProjectAnalysisList(viewsets.ModelViewSet):

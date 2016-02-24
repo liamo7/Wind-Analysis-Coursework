@@ -8,17 +8,10 @@ from .utils import readFromCsv
 def main(request):
 
     context = {
-        'page': 'home',
-        'sidebar_title': 'Project List',
-        'sidebar_object': 'project-list',
-        'sidebar_data': getAllProjects()
+        'page': 'home'
     }
 
     return render(request, 'webinterface/base.html', context)
-
-
-def testmain(request):
-    return render(request, 'webinterface/testbase.html')
 
 
 def project_view(request, title):
@@ -60,28 +53,6 @@ def handleFileUpload(file):
     project = getProjectByTitle('Project1')
     project.site_calibration_file = file
     project.save()
-
-
-def create_project(request):
-
-    if request.method == 'POST':
-        form = ProjectForm(request.POST)
-
-        if form.is_valid():
-            title = createProjectItem(form.cleaned_data['title'])
-            return redirect('project_view', title=title)
-    else:
-        form = ProjectForm()
-
-    context = {
-        'page': 'create-project',
-        'sidebar_title': 'Project List',
-        'sidebar_object': 'project-list',
-        'sidebar_data': getAllProjects(),
-        'form': form
-    }
-
-    return render(request, 'webinterface/base.html', context)
 
 
 """
