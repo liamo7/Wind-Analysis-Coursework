@@ -16,9 +16,9 @@ class Project(models.Model):
 
     site_calibration_file = models.FileField(upload_to=ProjectManager.getUploadPath)
 
-    @property
-    def dataFilePaths(self):
-        return printAllFilesInDirectory()
+    # @property
+    # def dataFilePaths(self):
+    #     return printAllFilesInDirectory()
 
     class Meta:
         verbose_name = 'Project'

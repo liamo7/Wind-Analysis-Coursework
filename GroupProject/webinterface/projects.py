@@ -11,13 +11,12 @@ def getProjectByTitle(title):
     return Project.objects.get(title=title)
 
 
-def createProjectItem(title):
-    project = Project.objects.create(title=title)
-    project.save()
+def createProjectItem(project):
 
     directory = settings.MEDIA_ROOT + '/' + project.title
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    return project.title
+    if project.site_calibration_allowed:
+        os.makedirs(directory + '/site_calibration')

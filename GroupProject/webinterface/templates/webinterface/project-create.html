@@ -4,8 +4,8 @@
     <label for="title">Project Title</label>
     <input ng-model="title" type="text" name="title">
 
-    <label for="siteCalibration">Site Calibration</label>
-    <input ng-model="siteCalibration" type="checkbox" name="siteCalibration">
+    <label for="site_calibration_allowed">Site Calibration</label>
+    <input ng-model="siteCalibrationCheckbox" type="checkbox" name="site_calibration_allowed">
 
-    <input ng-click="createProject('my_form')" type="submit" value="Create">
+    <input ng-click="createProject(title, siteCalibrationCheckbox)" type="submit" value="Create">
 </form>

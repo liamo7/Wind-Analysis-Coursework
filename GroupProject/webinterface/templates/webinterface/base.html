@@ -33,12 +33,12 @@
                 <div ng-switch-when="project-create">
                     {% include 'webinterface/project-create.html' %}
                 </div>
-<!--
-                {% if page == 'create-project' %}
-                    {% include 'webinterface/project-create.html' %}
-                {% elif page == 'upload' %}
+
+                <div ng-switch-when="project-site-calibration-upload">
                     {% include 'webinterface/site_calibrate_upload.html' %}
-                {% elif page == 'home' %}
+                </div>
+<!--
+                {% if page == 'home' %}
                     {% include 'webinterface/home.html' %}
                 {% endif %}
 -->

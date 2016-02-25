@@ -3,9 +3,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .projects import *
-from .analyses import getAnalysisFromProject
-from .forms import ProjectForm, UploadFileForm
-from rest_framework.decorators import api_view
 
 from .serializers import ProjectSerializer, AnalysisSerializer
 from .models import Project, Analysis
@@ -29,6 +26,17 @@ class ProjectList(viewsets.ModelViewSet):
         project = get_object_or_404(queryset, title=pk)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            project = Project.objects.create(**serializer.validated_data)
+            createProjectItem(project)
+            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+
+        print("Error during creation of project")
+        return Response('Error', status=status.HTTP_400_BAD_REQUEST)
 
 
 class AnalysisList(viewsets.ModelViewSet):

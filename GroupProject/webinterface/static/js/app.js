@@ -8,6 +8,8 @@ app.config(function($interpolateProvider){
 
 app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
 
+    $scope.siteCalibrationCheckbox = false;
+
     $scope.setMainContentState = function(state){
         $scope.mainContentState = state;
     }
@@ -21,6 +23,7 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
     }
 
     $scope.loadSingleProject = function(projectTitle) {
+            //This is causing two responses, 301 and 200, 200 is good, but the 300 says 'moved permanently' and lacks a /
             var project = $http.get('/api/v1/projects/' + projectTitle).then(function(response){
             $scope.setSideBarTitle(projectTitle);
             $scope.setCurrentProject(project);
@@ -70,7 +73,7 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
     $scope.setSideBarMode("project-list");
 
 
-    $scope.createProject = function(form){
+/*    $scope.createProject = function(form){
         var formData = {};
         formData["title"] = this.my_form.title["$modelValue"];
         //formData["hasSiteCalibration"] = this.my_form.siteCalibration["$modelValue"];
@@ -81,7 +84,21 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
             $scope.loadSingleProject(formData["title"]);
             $scope.setSideBarMode('project-obj');
         });
-    }
+    }*/
 
+
+    $scope.createProject = function(title, sitecal) {
+        window.alert(sitecal);
+
+        $http.post('/api/v1/projects/', {
+            title: title,
+            site_calibration_allowed: sitecal
+        }).then(function() {
+            $scope.loadProjects();
+            $scope.setMainContentState('project-view');
+            $scope.loadSingleProject(title);
+            $scope.setSideBarMode('project-obj');
+        });
+    }
 
 });

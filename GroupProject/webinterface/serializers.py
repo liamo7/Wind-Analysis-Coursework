@@ -7,7 +7,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('title', 'date_created', 'date_updated', 'dataFilePaths')
+        fields = ('title', 'date_created', 'date_updated', 'site_calibration_allowed')
         lookup_field = 'title'
 
 
