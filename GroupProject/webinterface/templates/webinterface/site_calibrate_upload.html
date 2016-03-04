@@ -16,5 +16,6 @@
     <p>{{ form.file.label_tag }}</p>
     <p>{{ form.file.errors }}
         {{ form.file }}
-    </p>    <input type="submit" value="Upload">
+
+    <input ng-click="uploadSiteCalibration({{ form.file }})" type="submit" value="Upload">
 </form>

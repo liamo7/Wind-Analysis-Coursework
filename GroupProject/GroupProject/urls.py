@@ -22,6 +22,9 @@ urlpatterns = [
     url(r'^upload-site-calibration', views.test_upload, name='test_upload'),
 
     url(r'^api/v1/', include(router.urls)),
+
+
+    url(r'^test$', views.test),
 ]
 
 if settings.DEBUG:

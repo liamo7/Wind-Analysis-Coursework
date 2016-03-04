@@ -3,6 +3,7 @@ from .projects import *
 from .analyses import getAnalysisFromProject
 from .forms import ProjectForm, UploadFileForm
 from .utils import readFromCsv
+from django.http import HttpResponse
 
 
 def main(request):
@@ -69,3 +70,18 @@ def handleFileUpload(file):
     project - current project instance, use dot notation on it
 
 """
+
+
+from .models import Turbine
+def test(request):
+
+    turbine = Turbine.objects.get_or_create(name='Nordex', manufacturer='Davis', model='N-90', diameter=20.5, hub_height=15.2)
+    turbine[0].setBins([0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,11.5,12,12.5,13,13.5,14,14.5,15,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,22.5,23,23.5,24,24.5,25,25.5])
+    turbine[0].setPowerInKillowats([0,0,0,0,0,0,0,29,76,136,207,292,390,504,635,787,958,1147,1352,1570,1799,2036,2231,2368,2454,2496,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,2500,0])
+
+    dict = turbine[0].createPowerCurveDict()
+
+    print(dict['bin'])
+    print(dict['powerInKilowatts'])
+
+    return HttpResponse("Test")

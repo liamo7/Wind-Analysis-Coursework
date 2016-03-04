@@ -101,4 +101,9 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
         });
     }
 
+
+    $scope.uploadSiteCalibration = function() {
+
+    };
+
 });
