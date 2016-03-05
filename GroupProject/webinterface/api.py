@@ -35,7 +35,7 @@ class ProjectList(viewsets.ModelViewSet):
             createProjectItem(project)
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
-        print("Error during creation of project")
+        # print("Error during creation of project")
         return Response('Error', status=status.HTTP_400_BAD_REQUEST)
 
 

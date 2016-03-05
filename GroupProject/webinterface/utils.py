@@ -4,21 +4,22 @@ import os
 
 
 def printAllFilesInDirectory():
-    list = []
-    for r, d, f in os.walk(settings.BASE_DIR):
-        for file in f:
-            list.append(os.path.join(settings.BASE_DIR, file))
-    return list
+    pass
+    # list = []
+    # for r, d, f in os.walk(settings.BASE_DIR):
+    #     for file in f:
+    #         list.append(os.path.join(settings.BASE_DIR, file))
+    # return list
 
 
 def readFromCsv(pathToFile):
-
-    path = settings.MEDIA_ROOT + '\Project4\sitecalibration\dummy.txt'
-
-    if os.path.exists(path):
-        print(path)
-    else:
-        print('File path does not exist')
-
-    df = pd.read_csv(path, sep='\t')
-    return df
+    pass
+    # path = settings.MEDIA_ROOT + '\Project4\sitecalibration\dummy.txt'
+    #
+    # if os.path.exists(path):
+    #     # print(path)
+    # else:
+    #     # print('File path does not exist')
+    #
+    # df = pd.read_csv(path, sep='\t')
+    # return df

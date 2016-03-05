@@ -40,13 +40,14 @@ def correlation(data, column1, column2, axes, showRegressionLine=True, showR2=Tr
     axes.plot(xl, yl, '--r')
 
 def distribution(data, column, norm=True, plotWeibull=False, upperLimit=1.0, title=''):
-    print('Dataset statistics')
-    print(data[column].describe())
-    print('Result of normaltest(): ' + str(normaltest(data[column])))
-    print('Result of Shapiro test for normality: ' + str(shapiro(data[column])))
+    # # print('Dataset statistics')
+    # # print(data[column].describe())
+    # # print('Result of normaltest(): ' + str(normaltest(data[column])))
+    # # print('Result of Shapiro test for normality: ' + str(shapiro(data[column])))
     if plotWeibull:
-        print('Calculated Weibull parameters:')
-        print(exponweib.fit(data[column], 1, 1))
+        pass
+        # # print('Calculated Weibull parameters:')
+        # # print(exponweib.fit(data[column], 1, 1))
 
     x = np.linspace(data[column].min(), data[column].max(), 1000)
     if plotWeibull:
@@ -65,7 +66,7 @@ def isDataLine(x):
 
 def lidarProfile(data, columns, heights, ax, title='Wind profiles'):
     try:
-        print(data)
+        # # print(data)
         cmap = cm.get_cmap('rainbow')
         line_colors = cmap(np.linspace(0,1,24))
         colors = np.asarray(data.index.hour)
@@ -89,7 +90,8 @@ def lidarProfile(data, columns, heights, ax, title='Wind profiles'):
         cbar.set_ticklabels(np.arange(0,24))
 
     except:
-        print('No data to plot')
+        pass
+        # # print('No data to plot')
 
 def mapToColorHex(rangeMin, rangeMax, value):
     oldRange = rangeMax - rangeMin + 1
@@ -116,7 +118,7 @@ def shearExponent(data, threshold=10.0):
 
 def surface(data, col1, col2, col3):
     data1 = data.dropna().sort(col3)
-    print(data1.head())
+    # # print(data1.head())
     x = data1[col1]
     y = data1[col2]
     z = data1[col3]

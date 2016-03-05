@@ -10,4 +10,4 @@ class ProjectForm(forms.ModelForm):
 
 
 class UploadFileForm(forms.Form):
-    file = forms.FileField(label='select a file')
+    file = forms.FileField(label='select a file', required=False)

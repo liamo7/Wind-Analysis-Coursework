@@ -1,6 +1,6 @@
 from __future__ import division
 import numpy as np
-from GroupProject.windanalysis.ppaTypes import *
+from test_wind.ppaTypes import *
 from scipy.special import cbrt
 from math import pi, acos
 
@@ -179,7 +179,7 @@ def specificEnergyProduction(row, windSpeedColumn, powerCurve, decimalPlaces=3):
     return powerCurve.getPower(row[windSpeedColumn], decimalPlaces)
 
 
-def stripeAream(radius, lowerChordHeight, upperChordHeight):
+def stripeArea(radius, lowerChordHeight, upperChordHeight):
     if (lowerChordHeight < 0) != (upperChordHeight < 0):
         return pi * np.power(radius, 2) - segmentArea(radius, abs(lowerChordHeight)) - segmentArea(radius, abs(
             upperChordHeight))

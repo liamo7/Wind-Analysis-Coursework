@@ -1,11 +1,11 @@
 from __future__ import division
 import pandas as pd
 import numpy as np
-from .calculation import *
+import test_wind.calculation as calc
 import configobj as cfg
 import operator as op
 from inspect import getargspec
-from .ppaTypes import *
+from test_wind.ppaTypes import *
 
 
 class Column(object):
@@ -44,12 +44,13 @@ class Datafile(object):
         self.badDataValues = badDataValues
         self.selectors = []
         self.rewsLevels = {}
-        print("Datafile: " + self.filename)
+        # # print("Datafile: " + self.filename)
 
     def fullyQualifiedPath(self):
         return self.directory + '/' + self.filename
 
     def configFile(self):
+        # # print(self.directory)
         return self.directory + '/' + self.filename.split('.')[0] + ".cfg"
 
     def addColumn(self, name, positionInFile, columnType, valueType,
@@ -75,11 +76,11 @@ class Datafile(object):
         df = pd.read_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, skiprows=self.rowsToSkip, parse_dates=True, dayfirst=True, usecols=cols, index_col=0, na_values=self.badDataValues)
         df.columns = [name[0] for name in sorted([[column.name, column.positionInFile] for column in self.columns], key=lambda column: column[1])]
         self.data = df.convert_objects(convert_numeric=True)
-        print("Data loaded: " + self.filename)
+        # # print("Data loaded: " + self.filename)
 
     def saveToFile(self):
         self.data.to_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
-        print("Data saved: " + self.filename)
+        # # print("Data saved: " + self.filename)
 
     def saveMetadata(self):
         config = cfg.ConfigObj()
@@ -94,7 +95,7 @@ class Datafile(object):
         config['selectors'] = {str(i): selector for i, selector in enumerate(self.selectors)}
         config.filename = self.configFile()
         config.write()
-        print("Metadata saved: " + self.filename)
+        # # print("Metadata saved: " + self.filename)
 
     def loadMetadata(self):
         config = cfg.ConfigObj(self.configFile())
@@ -140,7 +141,7 @@ class Datafile(object):
                              includeRange=bool(s['includeRange']),
                              rangeIncludesLowerBound=bool(s['rangeIncludesLowerBound']),
                              rangeIncludesUpperBound=bool(s['rangeIncludesUpperBound']))
-        print("Metadata loaded: " + self.filename)
+        # # print("Metadata loaded: " + self.filename)
 
 
     def clean(self):
@@ -152,7 +153,7 @@ class Datafile(object):
                 pass
         self.data.dropna(inplace=True)
         rowsAfterClean = len(self.data)
-        print(self.filename + ' - before clean: ' + str(rowsBeforeClean) + ' after clean: ' + str(rowsAfterClean) + ' (' + str(rowsBeforeClean-rowsAfterClean) + ' rows)')
+        # # print(self.filename + ' - before clean: ' + str(rowsBeforeClean) + ' after clean: ' + str(rowsAfterClean) + ' (' + str(rowsBeforeClean-rowsAfterClean) + ' rows)')
 
     def applyInstrumentCalibrations(self, removeOriginalCalibration=False):
         for column in self.columns:
@@ -167,7 +168,7 @@ class Datafile(object):
         self.directory = containingDirectory
         self.saveToFile()
         self.saveMetadata()
-        print("Datafile saved as: " + self.filename)
+        # # print("Datafile saved as: " + self.filename)
 
     def selectorFactory(self, columnName, operator, value):
         try:
@@ -214,7 +215,7 @@ class Datafile(object):
                 message += ' outside range '
 
             message += str(s['lowerLimit']) + ' - ' + str(s['upperLimit'])
-            print(message)
+            # # print(message)
 
             for column in selectorColumns:
                 test1 = self.selectorFactory(column, lowerOperator, s['lowerLimit'])
@@ -235,7 +236,7 @@ class Datafile(object):
 
     def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED):
 
-        print('Adding ', newColumn, '... ', end=' ')
+        # # print('Adding ', newColumn, '... ', end=' ')
         if 'row' in getargspec(functionToApply).args:
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:
@@ -246,13 +247,13 @@ class Datafile(object):
             self.data[newColumn] = functionToApply(*args, **kwargs)
 
         self.addColumn(newColumn,len(self.columns)+1,columnType, valueType, measurementHeight=measurementHeightValue)
-        print("Done")
+        # # print("Done")
 
     def getHubHeightColumnName(self, turbine, columnType):
         for column in self.columns:
             if column.columnType == columnType and column.measurementHeight == turbine.hubHeight:
                 return column.name
-        print("Hub height column not found: " + columnType)
+        # # print("Hub height column not found: " + columnType)
         return None
 
     def addRewsLevels(self, lidarColumns, turbine):
@@ -274,6 +275,6 @@ class Datafile(object):
                 previousMeasurementHeight = column.measurementHeight
 
                 column.segmentHeight = column.superiorLimitHeight - column.inferiorLimitHeight
-                column.segmentArea = stripeArea(turbine.radius(), column.inferiorLimitHeight-turbine.hubHeight, column.superiorLimitHeight-turbine.hubHeight)
+                column.segmentArea = calc.stripeArea(turbine.radius(), column.inferiorLimitHeight-turbine.hubHeight, column.superiorLimitHeight-turbine.hubHeight)
                 column.segmentWeighting = column.segmentArea / turbine.sweptArea()
 

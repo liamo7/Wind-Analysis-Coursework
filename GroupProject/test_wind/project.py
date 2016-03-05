@@ -1,9 +1,11 @@
 import configobj as cfg
-from .calculation import *
+import test_wind.calculation as calc
 import pandas as pd
-from .data import Datafile
-from .turbine import *
-from .ppaTypes import *
+from test_wind.data import Datafile
+from test_wind.ppaTypes import *
+from webinterface.models import Turbine, PowerCurve
+import numpy as np
+
 
 
 class Project(object):
@@ -13,19 +15,19 @@ class Project(object):
         self.datafiles = []
         self.turbine = None
         self.siteCalibrationFactors = {}
-        print("Project: " + self.name)
+        # # print("Project: " + self.name)
 
-    def defineTurbine(self, turbine):
-        self.turbine = turbine
-        print("Turbine: " + self.turbine.name)
+    def defineTurbine(self, name='Nordex', manufacturer='Davis', model='N-90', diameter=20.5, hub_height=15.2):
+        #self.turbine = turbine
+        self.turbine = Turbine.objects.create(name='Nordex', manufacturer='Davis', model='N-90', diameter=20.5, hub_height=15.2)
 
-    def addDatafile(self, name=None, fileType=None, rowsToSkip=[], columnSeparator='\t', badDataValues=[]):
+    def addDatafile(self, name=None, containingDirectory=None, fileType=None, rowsToSkip=[], columnSeparator='\t', badDataValues=[]):
         self.datafiles.append(name)
-        return Datafile(name, fileType, rowsToSkip, columnSeparator, badDataValues)
+        return Datafile(name=name, containingDirectory=containingDirectory, fileType=fileType, rowsToSkip=rowsToSkip, columnSeparator=columnSeparator, badDataValues=badDataValues)
 
     def stringifySiteCalibrationFactors(self):
         siteCalibrationFactorsAsStrings = {}
-        for scf, value in self.siteCalibrationFactors.iteritems():
+        for scf, value in self.siteCalibrationFactors.items():
             slope = str(value['slope'])
             offset = str(value['offset'])
             siteCalibrationFactorsAsStrings.update({str(scf): {'slope': slope, 'offset': offset}})
@@ -33,7 +35,7 @@ class Project(object):
 
     def deStringifySiteCalibrationFactors(self, factorDict):
         siteCalibrationFactorsDict = {}
-        for scf, value in factorDict.iteritems():
+        for scf, value in factorDict.items():
             slope = float(value['slope'])
             offset = float(value['offset'])
             siteCalibrationFactorsDict.update({int(scf): {'slope': slope, 'offset': offset}})
@@ -50,7 +52,7 @@ class Project(object):
 
         config.filename = self.directory + '/' + self.name + '.cfg'
         config.write()
-        print("Project metadata saved")
+        # # print("Project metadata saved")
 
     def configFile(self):
         return self.directory + '/' + self.name + ".cfg"
@@ -62,9 +64,10 @@ class Project(object):
         self.turbine = Turbine(config['turbine'])
         self.datafiles = config['datafiles']
         self.siteCalibrationFactors = self.deStringifySiteCalibrationFactors(config['siteCalibrationFactors'])
-        print("Loaded project metadata: " + self.name)
+        # # print("Loaded project metadata: " + self.name)
 
     def makeMeasuredPowerCurve(self, data, windSpeedColumn, powerColumn, binColumn, binWidth=0.5):
+        # # print("Here1")
         data['recordsPerBin'] = 1
         grouped = data.groupby(binColumn).aggregate({windSpeedColumn: 'mean',
                                                     powerColumn: 'mean',
@@ -73,9 +76,10 @@ class Project(object):
                                          grouped.index[len(grouped.index)-1]+binWidth,
                                          binWidth))
         completeDataframe = pd.concat([grouped, completeDataframe], axis=1).fillna(0)
-        completeDataframe.columns = ['recordsPerBin', 'powerInKilowatts', 'meanWindSpeed']
+        #completeDataframe.columns = ['recordsPerBin', 'powerInKilowatts', 'meanWindSpeed']
         completeDataframe['bin'] = completeDataframe.index
         completeDataframe['binStatus'] = BinStatus.EXCLUDED
+        # # print("Here2")
 
         invalidBins = 0
         for thisBin in completeDataframe.index:
@@ -97,7 +101,9 @@ class Project(object):
         firstPaddedBin = completeDataframe[completeDataframe['binStatus'] == BinStatus.MEASURED].index.max() + 1
         completeDataframe[firstPaddedBin:len(completeDataframe.index)]['binStatus'] = BinStatus.EXCLUDED
 
+        # # print("Here3")
         frontPaddingBins = np.arange(0,completeDataframe.loc[firstMeasuredBin]['bin'] - binWidth, binWidth)
+        # # print("Here3.5")
         frontPadding = pd.DataFrame({'bin': [x for x in frontPaddingBins],
                                      'recordsPerBin': [0 for x in frontPaddingBins],
                                      'powerInKilowatts': [0 for x in frontPaddingBins],
@@ -134,6 +140,7 @@ class Project(object):
         #     pcdict['binStatus'][thisRow] = BinStatus.EXCLUDED
         #     thisRow += 11
 
+        # # print("HERE4")
         return PowerCurve(completeDataframe.to_dict(orient='list'),
-                          cutin=self.turbine.warrantedPowerCurve.cutin,
-                          cutout=self.turbine.warrantedPowerCurve.cutout)
+                          cutin=self.turbine.getWarrantedPowerCurve().cutin,
+                          cutout=self.turbine.getWarrantedPowerCurve().cutout)

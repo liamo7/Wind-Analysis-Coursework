@@ -1,6 +1,6 @@
 from unittest import TestCase
-from .data import *
-from .ppaTypes import *
+from test_wind.data import *
+from test_wind.ppaTypes import *
 import os
 
 __author__ = 'Brian'

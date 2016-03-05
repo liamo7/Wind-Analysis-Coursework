@@ -4,7 +4,7 @@ import inspect
 
 def debug(message):
     func = inspect.currentframe().f_back.f_code
-    print(func.co_filename + ' - ' + func.co_name + ': ' + message)
+    # # print(func.co_filename + ' - ' + func.co_name + ': ' + message)
 
 
 def ifnull(var,val):

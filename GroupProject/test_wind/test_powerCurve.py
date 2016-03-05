@@ -1,5 +1,5 @@
 from unittest import TestCase
-from .project import PowerCurve
+from test_wind.project import PowerCurve
 from math import pi, exp
 
 __author__ = 'Brian'

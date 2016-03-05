@@ -1,7 +1,7 @@
 from unittest import TestCase
-from .calculation import *
-from .data import *
-from .ppaTypes import *
+from test_wind.calculation import *
+from test_wind.data import *
+from test_wind.ppaTypes import *
 import pandas as pd
 
 __author__ = 'Brian'

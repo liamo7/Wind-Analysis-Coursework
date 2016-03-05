@@ -1,9 +1,9 @@
 __author__ = 'Brian'
 import numpy as np
-from .calculation import *
+import test_wind.calculation as calc
 from math import modf, pi, log10, acos
 from pandas import DataFrame, concat, Series
-from .ppaTypes import *
+from test_wind.ppaTypes import *
 
 
 class Turbine(object):
@@ -63,27 +63,23 @@ class Turbine(object):
         self.stripes = []
         diameterFraction = np.round(self.diameter % 1,7)
         loopLimit = self.diameter
-
         if diameterFraction > 0:
             loopLimit = self.diameter - 1
             height = round(previousHeight + diameterFraction/2,7)
             upperLimit = height - self.hubHeight
             lowerLimit = previousHeight - self.hubHeight
-
-            stripeArea = stripeAream(self.radius(), lowerLimit, upperLimit)
-
+            stripeArea = calc.stripeArea(self.radius(), lowerLimit, upperLimit)
             proportion = stripeArea / self.sweptArea()
             windSpeedHeight = round(previousHeight + diameterFraction/4,7)
             self.stripes.append({'stripeArea': stripeArea,
                                  'proportion': proportion,
                                  'windSpeedHeight': windSpeedHeight})
             previousHeight = height
-
         for i in np.arange(loopLimit):
             height = round(previousHeight + 1,7)
             upperLimit = height - self.hubHeight
             lowerLimit = previousHeight - self.hubHeight
-            stripeArea = stripeAream(self.radius(), lowerLimit, upperLimit)
+            stripeArea = calc.stripeArea(self.radius(), lowerLimit, upperLimit)
             proportion = stripeArea / self.sweptArea()
             windSpeedHeight = round(previousHeight + 0.5, 7)
             self.stripes.append({'stripeArea': stripeArea,
@@ -94,7 +90,7 @@ class Turbine(object):
             height = round(previousHeight + diameterFraction/2,7)
             upperLimit = height - self.hubHeight
             lowerLimit = previousHeight - self.hubHeight
-            stripeArea = stripeAream(self.radius(), lowerLimit, upperLimit)
+            stripeArea = calc.stripeArea(self.radius(), lowerLimit, upperLimit)
             proportion = stripeArea / self.sweptArea()
             windSpeedHeight = round(previousHeight + diameterFraction/4,7)
             self.stripes.append({'stripeArea': stripeArea,
@@ -126,9 +122,9 @@ class PowerCurve(object):
 
     def calculatePowerCoefficients(self, rotorRadius):
         try:
-            self.data['powerCoefficient'] = self.data['powerInKilowatts'] * 1000 / availablePowerInWind(self.data['meanWindSpeed'], self.referenceAirDensity, rotorRadius)
+            self.data['powerCoefficient'] = self.data['powerInKilowatts'] * 1000 / calc.availablePowerInWind(self.data['meanWindSpeed'], self.referenceAirDensity, rotorRadius)
         except:
-            self.data['powerCoefficient'] = self.data['powerInKilowatts'] * 1000 / availablePowerInWind(self.data.index, self.referenceAirDensity, rotorRadius)
+            self.data['powerCoefficient'] = self.data['powerInKilowatts'] * 1000 / calc.availablePowerInWind(self.data.index, self.referenceAirDensity, rotorRadius)
 
     def windSpeedStep(self):
         return self.data.ix[1, 'bin'] - self.data.ix[0, 'bin']
@@ -162,10 +158,10 @@ class PowerCurve(object):
                     rayleigh_prev = rayleigh
                     power_prev = power
                 except:
-                    rayleigh_prev = rayleigh(self.data.ix[0, 'meanWindSpeed'] - 0.5, annualMeanWindSpeed)
+                    rayleigh_prev = calc.rayleigh(self.data.ix[0, 'meanWindSpeed'] - 0.5, annualMeanWindSpeed)
                     power_prev = 0.
 
-                rayleigh = rayleigh(self.data.iloc[row]['meanWindSpeed'], annualMeanWindSpeed)
+                rayleigh = calc.rayleigh(self.data.iloc[row]['meanWindSpeed'], annualMeanWindSpeed)
                 power = self.data.iloc[row]['powerInKilowatts']
 
                 self.data.ix[self.data.index[row], 'aepMeasured'] = 8760 * (rayleigh - rayleigh_prev) * (power + power_prev) / 2
@@ -177,7 +173,7 @@ class PowerCurve(object):
                 #             'previousPower': power_prev,
                 #             'rayleighPrev': rayleigh_prev,
                 #             'aep': 8760 * (rayleigh - rayleigh_prev) * (power + power_prev) / 2}
-                # print(feedback)
+                # # # print(feedback)
 
         lastMeasuredBin = self.data[self.data['binStatus'] != BinStatus.EXCLUDED].index.max()
         totalNumberOfBins = self.cutout / self.windSpeedStep() + 1
@@ -187,13 +183,13 @@ class PowerCurve(object):
             padding = DataFrame({'bin': np.arange(self.data.ix[lastMeasuredBin, 'bin'] + self.windSpeedStep(),
                                                   self.cutout + self.windSpeedStep(),
                                                   self.windSpeedStep())})
-            print(self.data)
-            print(padding)
-            print(totalNumberOfBins)
-            print(len(self.data.index))
-            print(np.arange(len(self.data.index), totalNumberOfBins + 1))
+            # # print(self.data)
+            # # print(padding)
+            # # print(totalNumberOfBins)
+            # # print(len(self.data.index))
+            # # print(np.arange(len(self.data.index), totalNumberOfBins + 1))
             padding.index = [x for x in np.arange(len(self.data.index), totalNumberOfBins + 1)]
-            print(padding)
+            # # print(padding)
 
             # padding = DataFrame({'bin': self.data.iloc[-numberOfRowsToAdd:]['bin'].as_matrix()},
             #                     index=np.arange(self.data.index[-11]+11, self.cutout/self.windSpeedStep()))
@@ -201,14 +197,14 @@ class PowerCurve(object):
             self.data = concat([self.data, padding])
         self.data['aepExtrapolated'] = self.data['aepMeasured']
         # maxPower = self.data[self.data['binStatus'] != BinStatus.EXCLUDED]['powerInKilowatts'].max()
-        rayleigh_prev = rayleigh(self.data.ix[lastMeasuredBin, 'bin'], annualMeanWindSpeed)
+        rayleigh_prev = calc.rayleigh(self.data.ix[lastMeasuredBin, 'bin'], annualMeanWindSpeed)
         for row in np.arange(lastMeasuredBin + 1, len(self.data.index)):
-            rayleigh = rayleigh(self.data.iloc[row]['bin'], annualMeanWindSpeed)
+            rayleigh = calc.rayleigh(self.data.iloc[row]['bin'], annualMeanWindSpeed)
             self.data.ix[self.data.index[row], 'aepExtrapolated'] = 8760 * (rayleigh - rayleigh_prev) * self.data.iloc[lastMeasuredBin]['powerInKilowatts']
-            print('Padding row '+str(row),)
-            print('   rayleigh: '+str(rayleigh),)
-            print('   rayleigh_prev: '+str(rayleigh_prev),)
-            print('   power: '+str(self.data.iloc[lastMeasuredBin]['powerInKilowatts']))
+            # # print('Padding row '+str(row),)
+            # # print('   rayleigh: '+str(rayleigh),)
+            # # print('   rayleigh_prev: '+str(rayleigh_prev),)
+            # # print('   power: '+str(self.data.iloc[lastMeasuredBin]['powerInKilowatts']))
             rayleigh_prev = rayleigh
 
 
@@ -216,32 +212,33 @@ class PowerCurve(object):
         try:
             return self.data['aepMeasured'].sum()
         except:
-            print('Calculate AEP first!')
+            # # print('Calculate AEP first!')
             return 0.0
 
     def aepExtrapolated(self):
         try:
             return self.data['aepExtrapolated'].sum()
         except:
-            print('Calculate AEP first!')
+            # # print('Calculate AEP first!')
             return 0.0
 
     def statistics(self):
-        if 'powerCoefficient' in self.data:
-            print(self.data[['bin',
-                             'meanWindSpeed',
-                             'recordsPerBin',
-                             'powerInKilowatts',
-                             'binStatus',
-                             'powerCoefficient',
-                             'aepMeasured',
-                             'aepExtrapolated']])
-        else:
-            print(self.data[['bin',
-                             'meanWindSpeed',
-                             'recordsPerBin',
-                             'powerInKilowatts',
-                             'binStatus']])
+        pass
+        # if 'powerCoefficient' in self.data:
+        #     # # print(self.data[['bin',
+        #                      'meanWindSpeed',
+        #                      'recordsPerBin',
+        #                      'powerInKilowatts',
+        #                      'binStatus',
+        #                      'powerCoefficient',
+        #                      'aepMeasured',
+        #                      'aepExtrapolated']])
+
+            # # print(self.data[['bin',
+            #                  'meanWindSpeed',
+            #                  'recordsPerBin',
+            #                  'powerInKilowatts',
+            #                  'binStatus']])
 
     def interpolate(self, interpolationStep=1.0):
         newLength = int((self.data.index[-1]-self.data.index[0])/interpolationStep+1)
