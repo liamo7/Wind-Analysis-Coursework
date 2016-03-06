@@ -11,8 +11,6 @@ class ProjectManager(models.Manager):
     def getUploadPath(self, filename):
         return '{0}\sitecalibration\{1}'.format(self.title, filename)
 
-
-
 class Turbine(models.Model):
     name = models.CharField(max_length=128, blank=False)
 
@@ -42,6 +40,8 @@ class Turbine(models.Model):
     def getPowerInKillowats(self):
         return json.loads(self.powerInKillowats)
 
+
+    # Todo: PowerCurveDict should use the values entred, dummy values work for dummy nordex data thouugh
     def createPowerCurveDict(self):
         # self.powerCurveDict = {
         #     'bin': self.getBins(),
@@ -278,7 +278,7 @@ class Project(models.Model):
     site_calibration_allowed = models.BooleanField(default=False)
     site_calibration_file = models.FileField(upload_to=ProjectManager.getUploadPath)
 
-    turbine = models.ForeignKey(Turbine, on_delete=models.CASCADE)
+    turbine = models.ForeignKey(Turbine, on_delete=models.CASCADE, related_name='turbines')
 
     # @property
     # def dataFilePaths(self):

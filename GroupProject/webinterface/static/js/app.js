@@ -1,18 +1,43 @@
 var app = angular.module('WebInterfaceApp', []);
 
-app.config(function($interpolateProvider){
+app.config(function($interpolateProvider, $httpProvider){
    $interpolateProvider.startSymbol('{[{');
    $interpolateProvider.endSymbol('}]}');
+
+    //CSRF tokens were not being passed by angular post
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 });
 
 
 app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
 
+
+
+    // Project Create Related --------------------------
+
+    //Is checkbox ticked
     $scope.siteCalibrationCheckbox = false;
+
+    //Store the selected turbine
+    $scope.turbineSelected = null;
+
+    $scope.getAllTurbines = function() {
+        $scope.turbines = $http.get('api/v1/turbines/').then(function(response) {
+            return response.data;
+        });
+    };
+
+    // Why do i need to call this ???
+    $scope.getAllTurbines();
+
+
+
+    //----------------------------------------------
 
     $scope.setMainContentState = function(state){
         $scope.mainContentState = state;
-    }
+    };
 
     $scope.initialize = function(data){
         $scope.mainContentState = "INIT";
@@ -20,7 +45,7 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
 
     $scope.setCurrentProject = function(project){
         $scope.currProject = project;
-    }
+    };
 
     $scope.loadSingleProject = function(projectTitle) {
             //This is causing two responses, 301 and 200, 200 is good, but the 300 says 'moved permanently' and lacks a /
@@ -57,7 +82,7 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
 
     $scope.setSideBarTitle = function(sideBarTitle){
         $scope.sideBarTitle = sideBarTitle;
-    }
+    };
 
     $scope.setSideBarMode = function(sideBarMode){
         $scope.sideBarMode = sideBarMode;
@@ -68,7 +93,7 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
         }else{
             $scope.setSideBarTitle("error?");
         }
-    }
+    };
 
     $scope.setSideBarMode("project-list");
 
@@ -87,19 +112,23 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
     }*/
 
 
-    $scope.createProject = function(title, sitecal) {
+    // CreateProject doesnt need called because its a click function, i guess
+    $scope.createProject = function(title, sitecal, turbine) {
+
         window.alert(sitecal);
 
+        //Should use django model fields
         $http.post('/api/v1/projects/', {
             title: title,
-            site_calibration_allowed: sitecal
+            site_calibration_allowed: sitecal,
+            turbine: turbine
         }).then(function() {
             $scope.loadProjects();
             $scope.setMainContentState('project-view');
             $scope.loadSingleProject(title);
             $scope.setSideBarMode('project-obj');
         });
-    }
+    };
 
 
     $scope.uploadSiteCalibration = function() {

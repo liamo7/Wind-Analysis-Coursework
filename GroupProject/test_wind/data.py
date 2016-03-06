@@ -4,7 +4,7 @@ import numpy as np
 import test_wind.calculation as calc
 import configobj as cfg
 import operator as op
-from inspect import getargspec
+from inspect import getargspec, signature
 from test_wind.ppaTypes import *
 
 
@@ -237,7 +237,9 @@ class Datafile(object):
     def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED):
 
         # # print('Adding ', newColumn, '... ', end=' ')
-        if 'row' in getargspec(functionToApply).args:
+        # Is this working?? seems to be - loh
+        #if 'row' in getargspec(functionToApply).args:
+        if 'row' in signature(functionToApply).parameters:
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:
             if columnArguments != ():

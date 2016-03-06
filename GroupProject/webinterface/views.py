@@ -99,7 +99,7 @@ def test(request):
     powerFile = project.addDatafile(name='dummy_power.txt', containingDirectory=currentDirectory, fileType=FileType.POWER, columnSeparator='\t')
     lidarFile = project.addDatafile(name='dummy_lidar.txt', containingDirectory=currentDirectory, fileType=FileType.LIDAR, columnSeparator='\t')
 
-    project.saveMetadata()
+    #project.saveMetadata()
     # # print("Project setup complete")
 
     windFile.addColumn('Mast - 82m Wind Direction Mean',       1, ColumnType.WIND_DIRECTION,        ValueType.MEAN,               measurementHeight=82, instrumentCalibrationSlope=0.04581, instrumentCalibrationOffset=0.2638)
@@ -111,10 +111,10 @@ def test(request):
     windFile.addColumn('Relative humidity (%)',               7, ColumnType.RELATIVE_HUMIDITY, ValueType.MEAN,               measurementHeight=30)
     windFile.addColumn('Temperature (C)',          8, ColumnType.TEMPERATURE,       ValueType.MEAN,               measurementHeight=30)
     windFile.addColumnSet('anemometers', ['Mast - 80m Wind Speed Mean','Mast - 64m Wind Speed Mean','Mast - 35.0m Wind Speed Mean'])
-    windFile.saveMetadata()
+    #windFile.saveMetadata()
 
     powerFile.addColumn('Power mean (kW)',            1,  ColumnType.POWER, ValueType.MEAN)
-    powerFile.saveMetadata()
+    #powerFile.saveMetadata()
 
     lidarFile.addColumn("LiDAR - 132.5m Wind Speed Mean",       1,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=132.5)
     lidarFile.addColumn("LiDAR - 127.5m Wind Speed Mean",       2,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=127.5)
@@ -126,7 +126,7 @@ def test(request):
     lidarFile.addColumn("LiDAR - 67.5m Wind Speed Mean",       8,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=67.5)
     lidarFile.addColumn("LiDAR - 57.5m Wind Speed Mean",       9,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=57.5)
     lidarFile.addColumn("LiDAR - 42.5m Wind Speed Mean",       10,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=42.5)
-    lidarFile.saveMetadata()
+    #lidarFile.saveMetadata()
 
     windFile.loadFromFile()
     powerFile.loadFromFile()
@@ -137,7 +137,7 @@ def test(request):
     lidarFile.clean()
 
     combinedFile = synchroniseDataFiles('dummy_data.txt', currentDirectory, [windFile, powerFile, lidarFile])
-    combinedFile.saveMetadata()
+    #combinedFile.saveMetadata()
     combinedFile.saveToFile()
 
     # # print("File setup complete")
