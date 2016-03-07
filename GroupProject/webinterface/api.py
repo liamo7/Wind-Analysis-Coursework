@@ -32,20 +32,15 @@ class ProjectList(viewsets.ModelViewSet):
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
-        print(repr(serializer))
 
         if serializer.is_valid():
-            print(serializer.validated_data)
-            turbine = Turbine.objects.get(name=serializer.validated_data['turbine'])
+            turbine = Turbine.objects.get(name=serializer.validated_data['turbine']['name'])
             project = Project.objects.create(title=serializer.validated_data['title'], site_calibration_allowed=serializer.validated_data['site_calibration_allowed'], turbine=turbine)
             createProjectItem(project)
             return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
-        else:
-            print(serializer.errors)
-            print(serializer.data['turbine'])
 
         # print("Error during creation of project")
-        return Response('Error', status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TurbineList(viewsets.ModelViewSet):

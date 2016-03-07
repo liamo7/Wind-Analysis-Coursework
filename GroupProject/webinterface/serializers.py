@@ -17,6 +17,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
+        turbine = TurbineSerializer()
         fields = ('title', 'date_created', 'date_updated', 'site_calibration_allowed', 'turbine')
         lookup_field = 'title'
 

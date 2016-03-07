@@ -111,17 +111,11 @@ app.controller('ListCtrl', function ListCtrl($scope, $log, $http){
         });
     }*/
 
-
-    // CreateProject doesnt need called because its a click function, i guess
     $scope.createProject = function(title, sitecal, turbine) {
-
-        window.alert(sitecal);
-
-        //Should use django model fields
         $http.post('/api/v1/projects/', {
             title: title,
             site_calibration_allowed: sitecal,
-            turbine: turbine
+            turbine: JSON.parse(turbine)
         }).then(function() {
             $scope.loadProjects();
             $scope.setMainContentState('project-view');
