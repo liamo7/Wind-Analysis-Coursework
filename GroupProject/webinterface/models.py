@@ -1,37 +1,24 @@
 from django.db import models
-from .utils import *
 
-class ProjectManager(models.Manager):
-    def getUploadPath(self, filename):
-        return '{0}\sitecalibration\{1}'.format(self.title, filename)
+
+class Turbine(models.Model):
+    name = models.CharField(max_length=300, unique=True, blank=False)
+
+    def __str__(self):
+        return self.name
 
 
 class Project(models.Model):
+    title = models.CharField(max_length=200, unique=True, blank=False)
 
-    title = models.CharField(max_length=64, unique=True, blank=False)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-
-    site_calibration_allowed = models.BooleanField(default=False)
-
-    site_calibration_file = models.FileField(upload_to=ProjectManager.getUploadPath)
-
-    # @property
-    # def dataFilePaths(self):
-    #     return printAllFilesInDirectory()
-
-    class Meta:
-        verbose_name = 'Project'
-        verbose_name_plural = 'Projects'
+    turbine = models.ForeignKey(Turbine, related_name='turbine', null=True)
 
     def __str__(self):
         return self.title
 
 
 class Analysis(models.Model):
-    title = models.CharField(max_length=64, blank=False)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
+    title = models.CharField(max_length=200, unique=True, blank=False)
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
@@ -41,3 +28,4 @@ class Analysis(models.Model):
 
     def __str__(self):
         return self.title
+

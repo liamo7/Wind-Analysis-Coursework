@@ -1,20 +1,19 @@
 from __future__ import division
+
 import numpy as np
-from GroupProject.windanalysis.ppaTypes import *
 from scipy.special import cbrt
 from math import pi, acos
+gasConstantDryAir = 287.05
+gasConstantWaterVapour = 461.5
 
 
-def airDensity(pressureInMillibars, temperature, relativeHumidityInPercent):
-    gasConstantDryAir = 287.05
-    gasConstantWaterVapour = 461.5
-    absoluteTemperature = degreeToKelvin(temperature)
-    vapourPressure = 0.0000205 * np.exp(0.0631846 * absoluteTemperature)
+def airDensity(pressureInMillibars, temperatureInDegrees, relativeHumidityInPercent):
+    absoluteTemperature = degreeToKelvin(temperatureInDegrees)
     pressure = millibarToPascal(pressureInMillibars)
     relativeHumidity = relativeHumidityInPercent / 100
 
-    return ((pressure / gasConstantDryAir) - relativeHumidity * vapourPressure * (
-    1 / gasConstantDryAir - 1 / gasConstantWaterVapour)) / absoluteTemperature
+    return ((pressure / gasConstantDryAir) - relativeHumidity * vapourPressure(absoluteTemperature) * (
+        1 / gasConstantDryAir - 1 / gasConstantWaterVapour)) / absoluteTemperature
 
 
 def availablePowerInWind(windSpeed, referenceAirDensity=1.225, rotorRadius=45):
@@ -30,10 +29,10 @@ def bin(row, columnToBin, binWidth=1.0, zeroIsBinStart=True, roundBinBoundaryUp=
     binValue = int((row[columnToBin] - correction) / binWidth) * binWidth + correction
 
     if not roundBinBoundaryUp and binValue == row[columnToBin]:
-        binValue = binValue - binWidth
+        binValue -= binWidth
 
     if binNameIsBinCentre:
-        binValue = binValue + binWidth / 2
+        binValue += binWidth / 2
 
     return binValue
 
@@ -105,6 +104,7 @@ def powerLawPercentageError(row, referenceValue, measuredValue, alpha, refHeight
     calculated = row[referenceValue] * np.power((float(testHeight) / float(refHeight)), row[alpha])
     return row[measuredValue] - calculated / row[measuredValue]
 
+
 def powerLawWindSpeedEstimate(referenceHeight, referenceWindSpeed, exponent, targetHeight):
     return referenceWindSpeed * np.power(targetHeight / referenceHeight, exponent)
 
@@ -146,7 +146,7 @@ def rotorEquivalentWindSpeed(row, rewsColumns, hubHeight, hubHeightWindSpeedColu
                                                         lowerHeight=firstColumnBelowHubHeight.measurementHeight,
                                                         upperHeight=firstColumnAtOrAboveHubHeight.measurementHeight)
         REWSHubHeightWindSpeed = row[firstColumnAtOrAboveHubHeight.name] * np.power(
-            hubHeight / firstColumnAtOrAboveHubHeight.measurementHeight, piecewiseExponent)
+                hubHeight / firstColumnAtOrAboveHubHeight.measurementHeight, piecewiseExponent)
 
     return row[hubHeightWindSpeedColumn] * (equivalentWindSpeed / REWSHubHeightWindSpeed)
 
@@ -159,14 +159,14 @@ def rootMeanSquareError(row, expected, columnNames=[]):
 
 def segmentArea(radius, chordHeight):
     return np.power(radius, 2) * acos(chordHeight / radius) - chordHeight * np.power(
-        (np.power(radius, 2) - np.power(chordHeight, 2)), 0.5)
+            (np.power(radius, 2) - np.power(chordHeight, 2)), 0.5)
 
 
 def shearCorrectedWindSpeed(row, windSpeedColumn, alphaColumn, turbine=None):
     windSpeedCubed = 0.
     for stripe in turbine.stripes:
         windSpeedCubed += np.power(
-            (row[windSpeedColumn] * np.power(stripe['windSpeedHeight'] / turbine.hubHeight, row[alphaColumn])), 3) * \
+                (row[windSpeedColumn] * np.power(stripe['windSpeedHeight'] / turbine.hubHeight, row[alphaColumn])), 3) * \
                           stripe['proportion']
     return np.power(windSpeedCubed, 1 / 3)
 
@@ -179,10 +179,10 @@ def specificEnergyProduction(row, windSpeedColumn, powerCurve, decimalPlaces=3):
     return powerCurve.getPower(row[windSpeedColumn], decimalPlaces)
 
 
-def stripeAream(radius, lowerChordHeight, upperChordHeight):
+def stripeArea(radius, lowerChordHeight, upperChordHeight):
     if (lowerChordHeight < 0) != (upperChordHeight < 0):
         return pi * np.power(radius, 2) - segmentArea(radius, abs(lowerChordHeight)) - segmentArea(radius, abs(
-            upperChordHeight))
+                upperChordHeight))
     else:
         return abs(segmentArea(radius, abs(upperChordHeight)) - segmentArea(radius, abs(lowerChordHeight)))
 
@@ -193,11 +193,16 @@ def turbulenceIntensity(windSpeedMean, windSpeedStandardDeviation):
 
 def turbulenceKineticEnergy(row, standardDeviationX, standardDeviationY, standardDeviationZ):
     return 0.5 * (
-    np.power(row[standardDeviationY], 2) + np.power(row[standardDeviationX], 2) + np.power(row[standardDeviationZ], 2))
+        np.power(row[standardDeviationY], 2) + np.power(row[standardDeviationX], 2) + np.power(row[standardDeviationZ],
+                                                                                               2))
 
 
 def turbulenceUpperLimit(hubHeightWindSpeed):
     return 0.1 * (1.25 * hubHeightWindSpeed + 6) / hubHeightWindSpeed
+
+
+def vapourPressure(absoluteTemperature):
+    return 0.0000205 * np.exp(0.0631846 * absoluteTemperature)
 
 
 def wattsToKilowatts(watts):
@@ -237,3 +242,4 @@ def windShearExponentByPowerLawFit(row, urefColumn, zref, columnSet):
 
 def windShearExponentTwoHeights(lowerWindSpeed, upperWindSpeed, lowerHeight=10.0, upperHeight=10.0):
     return np.log(upperWindSpeed / lowerWindSpeed) / np.log(float(upperHeight) / float(lowerHeight))
+

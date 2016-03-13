@@ -1,71 +1,75 @@
-from django.shortcuts import render, redirect
-from .projects import *
-from .analyses import getAnalysisFromProject
-from .forms import ProjectForm, UploadFileForm
-from .utils import readFromCsv
+from django.shortcuts import render
+from rest_framework.response import Response
+from django.http import HttpResponse
+from rest_framework import viewsets
+from .models import Project, Turbine, Analysis
+from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer
+from django.shortcuts import get_object_or_404
+from windAnalysis.dummy_analysis import dummy
 
 
-def main(request):
-
-    context = {
-        'page': 'home'
-    }
-
-    return render(request, 'webinterface/base.html', context)
+def index(request):
+    return render(request, 'base.html')
 
 
-def project_view(request, title):
-
-    project = getProjectByTitle(title)
-    analyses = getAnalysisFromProject(project)
-
-    context = {
-        'page': 'project-view',
-        'sidebar_title': project.title,
-        'sidebar_object': 'project-obj',
-        'sidebar_data': analyses
-    }
-
-    return render(request, 'webinterface/base.html', context)
+class TurbineViewSet(viewsets.ModelViewSet):
+    lookup_field = 'name'
+    queryset = Turbine.objects.all()
+    serializer_class = TurbineSerializer
 
 
-def test_upload(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            handleFileUpload(request.FILES['file'])
-            return redirect('project_view', title='Project1')
-    else:
-        form = UploadFileForm()
+class ProjectViewSet(viewsets.ModelViewSet):
+    lookup_field = 'title'
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
 
-    context = {
-        'page': 'upload',
-        'sidebar_title': 'Project List',
-        'sidebar_object': 'project-list',
-        'sidebar_data': getAllProjects(),
-        'form': form
-    }
+    def create(self, request, *args, **kwargs):
 
-    return render(request, 'webinterface/base.html', context)
+        serializer = self.serializer_class(data=request.data)
+        print(serializer)
 
+        turbine = Turbine.objects.get(name=request.data['turbine']['name'])
 
-def handleFileUpload(file):
-    project = getProjectByTitle('Project1')
-    project.site_calibration_file = file
-    project.save()
+        if turbine:
+            if serializer.is_valid():
+                print(serializer.validated_data)
+                Project.objects.create(turbine=turbine, **serializer.validated_data)
+                return Response()
+
+        print(serializer.errors)
+        return Response()
 
 
-"""
-    Returns for sidebar from render
+class AnalysisViewSet(viewsets.ModelViewSet):
+    lookup_field = 'title'
+    queryset = Analysis.objects.all()
+    serializer_class = AnalysisSerializer
 
-    sidebar-title - sidebar title
-    sidebar-files - list of dirs and files to display in sidebar
+    def create(self, request, *args, **kwargs):
 
-    toolbar-options - lists of buttons to show on toolbar
+        serializer = self.serializer_class(data=request.data)
+        print(serializer)
 
-    page - the page that should be displayed
+        project = Project.objects.get(title=request.data['project']['title'])
 
-    projects - list of created projects in db
-    project - current project instance, use dot notation on it
+        if project:
+            if serializer.is_valid():
+                print(serializer.validated_data)
+                Analysis.objects.create(project=project, **serializer.validated_data)
+                dummy()
+                return Response()
 
-"""
+
+        print(serializer.errors)
+        return Response()
+
+    def list(self, request, title=None):
+        analysis = Analysis.objects.get(title=title)
+        serializer = AnalysisSerializer(analysis)
+        return Response(serializer.data)
+
+    def retrieve(self, request, title=None):
+        project = Project.objects.get(title=title)
+        serializer = AnalysisSerializer(Analysis.objects.filter(project=project), many=True)
+        return Response(serializer.data)
+

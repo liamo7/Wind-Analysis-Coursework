@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Project, Analysis
+from .models import Project, Turbine, Analysis
 
-# Register your models here.
 admin.site.register(Project)
+admin.site.register(Turbine)
 admin.site.register(Analysis)

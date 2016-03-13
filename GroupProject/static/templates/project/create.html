@@ -1,0 +1,31 @@
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+    <h1>Project Create</h1>
+    <div class="well">
+      <form role="form" ng-submit="createProject(title, description, selectedTurbine)">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" class="form-control" id="title" ng-model="title"/>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <input type="text" class="form-control" id="description" ng-model="description"/>
+        </div>
+
+        <div class="form-group">
+            <label for="turbine">Turbine</label>
+            <select ng-model="selectedTurbine">
+                <option ng-repeat="turbine in turbineList" value="{[{ turbine }]}">{[{turbine.name}]}</option>
+            </select>
+
+            <p>{[{selectedTurbine}]}</p>
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

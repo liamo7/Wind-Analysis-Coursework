@@ -4,8 +4,8 @@ from .ppaTypes import *
 import pandas as pd
 
 # TODO: Move this to data.py, add datafile sources and rename function to 'recreate file from source' or similar
-def synchroniseDataFiles(newFilePath, dataFiles):
-    synchronisedFile = Datafile(newFilePath,FileType.COMBINED)
+def synchroniseDataFiles(newFilePath, containingDirectory, dataFiles):
+    synchronisedFile = Datafile(newFilePath, containingDirectory, FileType.COMBINED)
 
     columnNumber = 1
     for f in dataFiles:

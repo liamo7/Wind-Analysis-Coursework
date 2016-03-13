@@ -40,6 +40,7 @@ class BinStatus(Enum):
     INTERPOLATED = 2
     EXCLUDED = 3
     PADDED = 4
+    WARRANTED = 5
 
 class REWSMeasurementType(Enum):
     REMOTE_SENSING_DEVICE = 1

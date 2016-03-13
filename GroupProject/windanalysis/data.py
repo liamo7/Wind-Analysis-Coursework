@@ -1,7 +1,7 @@
 from __future__ import division
 import pandas as pd
 import numpy as np
-from .calculation import *
+import windAnalysis.calculation as calc
 import configobj as cfg
 import operator as op
 from inspect import getargspec
@@ -72,9 +72,10 @@ class Datafile(object):
 
     def loadFromFile(self):
         cols = sorted([0]+[column.positionInFile for column in self.columns])
+        testvar = self.fullyQualifiedPath()
         df = pd.read_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, skiprows=self.rowsToSkip, parse_dates=True, dayfirst=True, usecols=cols, index_col=0, na_values=self.badDataValues)
         df.columns = [name[0] for name in sorted([[column.name, column.positionInFile] for column in self.columns], key=lambda column: column[1])]
-        self.data = df.convert_objects(convert_numeric=True)
+        self.data = pd.to_numeric(df, errors='coerce')
         print("Data loaded: " + self.filename)
 
     def saveToFile(self):
@@ -162,7 +163,7 @@ class Datafile(object):
         for column in [c for c in self.columns if c.columnType == ColumnType.WIND_DIRECTION]:
             self.data[column.name] %= 360
 
-    def saveAs(self,newFileName, containingDirectory):
+    def saveAs(self, newFileName, containingDirectory):
         self.filename = newFileName
         self.directory = containingDirectory
         self.saveToFile()
@@ -274,6 +275,6 @@ class Datafile(object):
                 previousMeasurementHeight = column.measurementHeight
 
                 column.segmentHeight = column.superiorLimitHeight - column.inferiorLimitHeight
-                column.segmentArea = stripeArea(turbine.radius(), column.inferiorLimitHeight-turbine.hubHeight, column.superiorLimitHeight-turbine.hubHeight)
+                column.segmentArea = calc.stripeArea(turbine.radius(), column.inferiorLimitHeight-turbine.hubHeight, column.superiorLimitHeight-turbine.hubHeight)
                 column.segmentWeighting = column.segmentArea / turbine.sweptArea()
 
