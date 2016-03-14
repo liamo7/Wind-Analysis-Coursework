@@ -1,4 +1,4 @@
-var app = angular.module('webinterface', ['ngRoute']);
+var app = angular.module('webinterface', ['ngRoute', 'ngDialog']);
 
 
 app.config(function($locationProvider, $interpolateProvider, $routeProvider, $httpProvider) {
@@ -11,7 +11,6 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
 
     $interpolateProvider.startSymbol('{[{');
     $interpolateProvider.endSymbol('}]}');
-
 
     //If you pass 'controller: mainController' in routeProvider,
     //it calls a new controller reseting all variables.
@@ -42,7 +41,6 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
             templateUrl: '/static/templates/analysis/create.html'
         });
 });
-
 
 
 //Services allow communication between controller functionality
@@ -78,7 +76,7 @@ app.factory('projectService', function($http, $routeParams) {
 app.controller('mainController', function($location, $http, $scope, projectService) {
 
     function init() {
-        console.log("init bruv");
+        console.log("init");
         $scope.currentProject = null;
         $scope.selectedTurbine = null;
         $scope.sidebarType = null;
@@ -171,3 +169,34 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 
 
 
+
+app.controller('analysisCreationController', function($location, $http, $scope, ngDialog, projectService) {
+
+    function init() {
+        console.log("init");
+        $scope.selectedProcess = null;
+        $scope.processes = [];
+    } init();
+
+    $scope.addProcess = function(title) {
+        $scope.processes.push(title);
+
+        $scope.selectedProcess = null;
+    };
+
+     $scope.showPrompt = function() {
+		ngDialog.openConfirm({template: '/static/templates/analysis/createProcess.html',
+		  scope: $scope //Pass the scope object if you need to access in the template
+		}).then(
+			function(value) {
+				//save the contact form
+			},
+			function(value) {
+				//Cancel or do nothing
+          alert('Rejected')
+
+			}
+		);
+	};
+
+});
