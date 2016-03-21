@@ -168,35 +168,44 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 });
 
 
-
-
-app.controller('analysisCreationController', function($location, $http, $scope, ngDialog) {
+app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog) {
 
     function init() {
         console.log("init");
         $scope.selectedProcess = null;
         $scope.processes = [];
-    } init();
+        $scope.processParams = {'BooleanParam': 'checkbox', 'TextParam': 'text'};
+    }
 
-    $scope.addProcess = function(title) {
+    init();
+
+    $scope.addProcess = function (title) {
         $scope.processes.push(title);
-
         $scope.selectedProcess = null;
     };
 
-     $scope.showPrompt = function() {
-		ngDialog.openConfirm({
+    $scope.loadFunctionParams = function () {
+        // TODO load the function params from the server and set processParams to them
+    };
+
+    $scope.showPrompt = function () {
+        ngDialog.close();
+
+        $scope.loadFunctionParams($scope.selectedProcess);
+
+        ngDialog.openConfirm({
             template: '/static/templates/analysis/createProcess.html',
-		    scope: $scope, //Pass the scope object if you need to access in the template
-            controller: 'analysisCreationController'
-		}).then(
-			function(value) {
-				//save the contact form
-			},
-			function(value) {
-				//Cancel or do nothing
+            scope: $scope, //Pass the scope object if you need to access in the template
+        }).then(
+            function (value) {
+                //save the contact form
+                $scope.addProcess($scope.selectedProcess);
+            },
+            function (value) {
+                //Cancel or do nothing
+                $scope.processParams = {};
             });
 
-	};
+    };
 
 });

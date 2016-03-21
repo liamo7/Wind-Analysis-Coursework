@@ -1,10 +1,14 @@
 <div class="ngdialog-message">
     <link rel="stylesheet" href="static/css/ngDialog-theme-default.css" />
-    <h2>Contact us</h2>
-    <input type="text" placeholder="Name" ng-model="name"/>
-    <input type="text" placeholder="Email" ng-model="email"/>
-    <input type="text" placeholder="Mobile" ng-model="mobile"/>
-    <textarea placeholder="Enter your message or query..." ng-model="message"></textarea>
+    <h2>{[{selectedProcess}]}</h2>
+
+
+    <div ng-repeat="(paramName, paramType) in processParams" style="text-indent: 5%;">
+        <p>{[{ paramName }]} <input type="{[{ paramType }]}" placeholder="{[{paramName}]}" ng-model="param"/></p>
+
+    </div>
+
+
     <div class="ngdialog-buttons">
         <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click=closeThisDialog("Cancel")>
             Cancel
