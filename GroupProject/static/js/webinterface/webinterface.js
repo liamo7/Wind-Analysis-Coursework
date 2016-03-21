@@ -170,7 +170,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 
 
 
-app.controller('analysisCreationController', function($location, $http, $scope, ngDialog, projectService) {
+app.controller('analysisCreationController', function($location, $http, $scope, ngDialog) {
 
     function init() {
         console.log("init");
@@ -185,18 +185,18 @@ app.controller('analysisCreationController', function($location, $http, $scope, 
     };
 
      $scope.showPrompt = function() {
-		ngDialog.openConfirm({template: '/static/templates/analysis/createProcess.html',
-		  scope: $scope //Pass the scope object if you need to access in the template
+		ngDialog.openConfirm({
+            template: '/static/templates/analysis/createProcess.html',
+		    scope: $scope, //Pass the scope object if you need to access in the template
+            controller: 'analysisCreationController'
 		}).then(
 			function(value) {
 				//save the contact form
 			},
 			function(value) {
 				//Cancel or do nothing
-          alert('Rejected')
+            });
 
-			}
-		);
 	};
 
 });
