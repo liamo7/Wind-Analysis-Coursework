@@ -17,6 +17,19 @@ class TurbineViewSet(viewsets.ModelViewSet):
     queryset = Turbine.objects.all()
     serializer_class = TurbineSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        print(serializer)
+
+        if serializer.is_valid():
+            print(serializer.validated_data)
+            turbine = Turbine.objects.create(**serializer.validated_data)
+            turbine.addOneMetreHorizontalStripes()
+            return Response()
+
+        print(serializer.errors)
+        return Response()
+
 
 class ProjectViewSet(viewsets.ModelViewSet):
     lookup_field = 'title'
@@ -33,7 +46,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if turbine:
             if serializer.is_valid():
                 print(serializer.validated_data)
-                Project.objects.create(turbine=turbine, **serializer.validated_data)
+                project = Project.objects.create(turbine=turbine, **serializer.validated_data)
                 return Response()
 
         print(serializer.errors)
@@ -58,7 +71,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 Analysis.objects.create(project=project, **serializer.validated_data)
                 dummy()
                 return Response()
-
 
         print(serializer.errors)
         return Response()

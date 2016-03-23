@@ -2,12 +2,22 @@
   <div class="col-md-4 col-md-offset-4">
     <h1>Turbine Create</h1>
     <div class="well">
-      <form role="form" ng-submit="createTurbine(name)">
+      <form role="form" ng-submit="createTurbine(name, bin, powerInKillowats)">
         <div class="form-group">
           <label for="name">Name</label>
           <input type="text" class="form-control" id="name" ng-model="name"/>
         </div>
 
+          <div class="form-group">
+          <label for="bin">Bin Array</label>
+          <input type="text" class="form-control" id="bin" ng-model="bin"/>
+        </div>
+
+          <div class="form-group">
+          <label for="powerInKillowats">Power In Killowats</label>
+          <input type="text" class="form-control" id="powerInKillowats" ng-model="powerInKillowats"/>
+        </div>
+cdxcffddfsdf
         <div class="form-group">
           <button type="submit" class="btn btn-primary">Submit</button>
         </div>

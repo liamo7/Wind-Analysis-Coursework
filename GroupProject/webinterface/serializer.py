@@ -6,7 +6,7 @@ class TurbineSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Turbine
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'bin', 'powerInKillowats')
 
     def create(self, validated_data):
         print(validated_data)

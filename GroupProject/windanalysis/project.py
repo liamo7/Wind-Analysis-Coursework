@@ -1,6 +1,6 @@
 import configobj as cfg
 from .data import Datafile
-from .turbine import *
+from webinterface.models import *
 from .ppaTypes import *
 
 
@@ -71,8 +71,8 @@ class Project(object):
         grouped.index = list(range(len(grouped)))
 
         powerCurve = PowerCurve(grouped.to_dict(orient='list'),
-                                cutin=self.turbine.warrantedPowerCurve.cutin,
-                                cutout=self.turbine.warrantedPowerCurve.cutout,
+                                cutin=self.turbine.warrantedPowerCurve().cutin,
+                                cutout=self.turbine.warrantedPowerCurve().cutout,
                                 windSpeedStep=binWidth,
                                 referenceAirDensity=airDensity)
 

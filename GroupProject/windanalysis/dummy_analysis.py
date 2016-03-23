@@ -7,14 +7,16 @@ import windAnalysis.calculation as calculation
 import windAnalysis.plotting as plotting
 from .project import *
 from .utility import *
-from .turbine import *
+from webinterface.models import Turbine
 from .ppaTypes import *
 from django.http import HttpResponse
 
 
 def dummy():
     project = Project('Dummy_project', os.getcwd())
-    project.defineTurbine(Turbine('Nordex N90'))
+    turbine = Turbine.objects.get(name='Nordex')
+
+    project.defineTurbine(turbine)
 
     os.chdir(project.directory)
 
@@ -82,8 +84,8 @@ def dummy():
     combinedFile.addDerivedColumn('siteCorrectedWindSpeed',                    calculation.siteCorrectedWindSpeed, columnArguments=('Mast - 80m Wind Speed Mean', 'wind_direction_bin'), kwargs={'factors': siteCalibrationFactors})
     combinedFile.addDerivedColumn('normalisedWindSpeed',                    calculation.normalisedWindSpeed, columnArguments=('siteCorrectedWindSpeed', 'airDensity'), columnType=ColumnType.WIND_SPEED)
     combinedFile.addDerivedColumn('windSpeedBin',                           calculation.bin, columnArguments=('normalisedWindSpeed',), kwargs={'binWidth': 0.5, 'zeroIsBinStart': False})
-    combinedFile.addDerivedColumn('hubHeightSpecificEnergyProduction',      calculation.specificEnergyProduction, kwargs=({'windSpeedColumn': 'normalisedWindSpeed', 'powerCurve': project.turbine.warrantedPowerCurve}))
-    combinedFile.addDerivedColumn('powerDeviation',                         calculation.powerDeviation, columnArguments=('Power mean (kW)', 'normalisedWindSpeed'), kwargs={'powerCurve': project.turbine.warrantedPowerCurve})
+    combinedFile.addDerivedColumn('hubHeightSpecificEnergyProduction',      calculation.specificEnergyProduction, kwargs=({'windSpeedColumn': 'normalisedWindSpeed', 'powerCurve': project.turbine.warrantedPowerCurve()}))
+    combinedFile.addDerivedColumn('powerDeviation',                         calculation.powerDeviation, columnArguments=('Power mean (kW)', 'normalisedWindSpeed'), kwargs={'powerCurve': project.turbine.warrantedPowerCurve()})
 
 
     combinedFile.selectData()

@@ -161,9 +161,12 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         }
     };
 
-    $scope.createTurbine = function(name) {
+    $scope.createTurbine = function(name, bin, powerInKillowats) {
         return $http.post('/api/v1/turbines/', {
-            name: name
+            name: name,
+            bin: JSON.parse(bin),
+            powerInKillowats: JSON.parse(powerInKillowats),
+
         });
     };
 
