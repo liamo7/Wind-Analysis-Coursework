@@ -1,0 +1,25 @@
+<div class="ngdialog-message">
+    <link rel="stylesheet" href="static/css/ngDialog-theme-default.css" />
+    <h2>Column Selection</h2>
+    <p>{[{message}]}</p>
+
+
+    <div style="height: 50vh;overflow-y: scroll;">
+        <div ng-repeat="colName in columnNames">
+            <label>{[{ colName }]}</label>
+            <select>
+                <option>Don't use</option>
+            </select> <!-- column type -->
+            <select></select> <!-- column value type -->
+            <!-- additional params -->
+        </div>
+    </div>
+
+
+    <div class="ngdialog-buttons">
+        <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click=closeThisDialog("Cancel")>
+            Cancel
+        </button>
+        <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click=confirm("OK")>OK</button>
+    </div>
+</div>

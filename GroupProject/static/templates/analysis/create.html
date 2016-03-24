@@ -1,14 +1,48 @@
 <div class="row">
   <div class="col-md-4 col-md-offset-4">
     <h1>Analysis Create</h1>
-    <div class="well">
+    <div class="well"  ng-controller='analysisCreationController'>
       <form role="form" ng-submit="createAnalysis(title, currentProject)">
         <div class="form-group">
           <label for="title">Title</label>
           <input type="text" class="form-control" id="title" ng-model="title"/>
         </div>
 
-            <p>{[{currentProject.title}]}</p>
+        <label id="inputFile">Input file (synchronized or derived from other analysis data)</label>
+        <br>
+        <select>
+
+        </select>
+
+        <h1>Processing</h1>
+        <label id="addProcess">Add process</label>
+        <select ng-model="selectedProcess">
+          <option>Air Density</option>
+          <option>Turbulence Intensity</option>
+          <option>Wind Shear Exponent Polyfit</option>
+          <option>Two Height Wind Shear Exponent</option>
+          <option>wind_direction_bin</option>
+          <option>siteCorrectedWindSpeed</option>
+          <option>normalisedWindSpeed</option>
+          <option>windSpeedBin</option>
+          <option>hubHeightSpecificEnergyProduction</option>
+          <option>powerDeviation</option>
+        </select>
+        <a ng-click="showPrompt($event);">Add Process</a>
+
+        <div>
+          <dialog></dialog>
+        </div>
+
+        <table border="1">
+          <tr>
+            <td ng-repeat="(key, value) in processes">{[{ key }]}</td>
+          </tr>
+          <tr>
+            <td ng-repeat="(key, value) in processes">{[{ value }]}</td>
+          </tr>
+        </table>
+
 
         <div class="form-group">
           <button type="submit" class="btn btn-primary">Submit</button>

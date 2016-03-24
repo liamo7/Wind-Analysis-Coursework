@@ -1,4 +1,4 @@
-var app = angular.module('webinterface', ['ngRoute']);
+var app = angular.module('webinterface', ['ngRoute', 'ngDialog']);
 
 
 app.config(function($locationProvider, $interpolateProvider, $routeProvider, $httpProvider) {
@@ -11,7 +11,6 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
 
     $interpolateProvider.startSymbol('{[{');
     $interpolateProvider.endSymbol('}]}');
-
 
     //If you pass 'controller: mainController' in routeProvider,
     //it calls a new controller reseting all variables.
@@ -42,7 +41,6 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
             templateUrl: '/static/templates/analysis/create.html'
         });
 });
-
 
 
 //Services allow communication between controller functionality
@@ -78,7 +76,7 @@ app.factory('projectService', function($http, $routeParams) {
 app.controller('mainController', function($location, $http, $scope, projectService) {
 
     function init() {
-        console.log("init bruv");
+        console.log("init");
         $scope.currentProject = null;
         $scope.selectedTurbine = null;
         $scope.sidebarType = null;
@@ -170,7 +168,125 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         });
     };
 
+
 });
 
 
+app.controller('projectCreationController', function ($location, $http, $scope, ngDialog) {
 
+    function init() {
+        console.log("init project controller");
+        $scope.columnNames = ['col1', 'col2', 'col3'];
+        $scope.dataFiles = [];
+        $scope.message = "";
+    }
+
+    init();
+    $scope.fileNameChanged = function (input) {
+        $scope.dataFiles[input.id.split(' ')[2]] = input.files[0];
+    };
+
+    $scope.showPrompt = function () {
+        ngDialog.close();
+
+        $scope.columnNames = [];
+        $scope.message = "";
+
+        var reader = new FileReader();
+        function readFile(index) {
+            if (index >= $scope.dataFiles.length) {
+                ngDialog.openConfirm({
+                    template: '/static/templates/project/selectHeaders.html',
+                    scope: $scope, //Pass the scope object if you need to access in the template
+                }).then(
+                    function (value) {
+                        //save the contact form
+                    },
+                    function (value) {
+                        //Cancel or do nothing
+                    });
+                return;
+            }
+
+            var file = $scope.dataFiles[index];
+            reader.onload = function (e) {
+
+                var fileContents = e.target.result;
+                var columnHeaders = fileContents.split('\n')[0].split('\t');
+                for(i = 0; i < columnHeaders.length; i++){
+                    columnHeaders[i] = file.name + " | " + columnHeaders[i];
+                }
+
+                var duplicate = false;
+                for (i = 0; i < index; i++) {
+                    if (i != index) {
+                        if ($scope.dataFiles[i].name == file.name) {
+                            duplicate = true;
+                        }
+                    }
+                }
+                if(!duplicate) {
+                    $scope.columnNames = $scope.columnNames.concat(columnHeaders);
+                }else{
+                    $scope.message = "Duplicate files ignored";
+                }
+
+                readFile(index + 1)
+            }
+            reader.readAsText(file);
+        }
+
+        readFile(0);
+
+    };
+
+});
+
+app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog) {
+
+    function init() {
+        console.log("init analysis controller");
+        $scope.selectedProcess = null;
+        $scope.processes = {};
+        $scope.processParams = ['param1', 'param2', 'param3'];
+        $scope.columnNames = ['col1', 'col2', 'col3'];
+
+        $scope.selectedColumns = [];
+    }
+
+    init();
+
+    $scope.addProcess = function (process) {
+        alert(JSON.stringify(process, null, 4));
+        var key = Object.keys(process)[0];
+        $scope.processes[key] = process[key];
+        $scope.selectedProcess = null;
+    };
+
+    $scope.loadFunctionParams = function () {
+        // TODO load the function params from the server and set processParams to them
+    };
+
+    $scope.showPrompt = function () {
+        ngDialog.close();
+
+        $scope.loadFunctionParams($scope.selectedProcess);
+
+        ngDialog.openConfirm({
+            template: '/static/templates/analysis/createProcess.html',
+            scope: $scope, //Pass the scope object if you need to access in the template
+        }).then(
+            function (value) {
+                //save the contact form
+                var process = {};
+                process[$scope.selectedProcess] = [$scope.selectedColumns];
+                $scope.addProcess(process);
+            },
+            function (value) {
+                //Cancel or do nothing
+                $scope.processParams = {};
+            });
+
+    };
+
+});
