@@ -25,6 +25,10 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
             templateUrl: '/static/templates/project/create.html'
         })
 
+        .when('/project/:title/files/upload', {
+            templateUrl: '/static/templates/project/fileupload.html'
+        })
+
         .when('/project/:title', {
             templateUrl: '/static/templates/project/detail.html'
         })
@@ -34,7 +38,7 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
         })
 
         .when('/turbine/create', {
-            templateUrl: '/static/templates/turbine/create.html'
+            templateUrl: '/static/templates/project/create.html'
         })
 
         .when('/project/analysis/analysis/create', {
@@ -67,6 +71,14 @@ app.factory('projectService', function($http, $routeParams) {
 
         turbines: function() {
             return $http.get('/api/v1/turbines/');
+        },
+
+        getColumnTypes: function() {
+            return $http.get('/api/v1/columntypes/');
+        },
+
+        getValueTypes: function() {
+            return $http.get('/api/v1/valuetypes/');
         }
     };
 
@@ -84,6 +96,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.currentAnalysis = null;
         $location.path('/');
     } init();
+
 
     function closeAnalysis() {
         $scope.currentAnalysis = null;
@@ -126,6 +139,8 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.turbineList = response.data;
     });
 
+
+
     $scope.loadAnalysis = function(analysis) {
         setCurrentAnalysis(analysis);
     }
@@ -139,14 +154,19 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         });
     };
 
-    $scope.createProject = function(title, description, turbine) {
+    $scope.createProject = function(title, description, turbine, mastFile) {
+
+        projectService.getColumnTypes();
+        alert(mastFile);
+
         return $http.post('/api/v1/projects/', {
             title: title,
             description: description,
-            turbine: JSON.parse(turbine)
+            turbine: JSON.parse(turbine),
+            mastFile: mastFile
         }).then(function (response) {
             $scope.loadProject(response.config.data);
-            $location.path('/project/' + title);
+            $location.path('/project/' + title + '/files/upload/');
         });
     };
 
@@ -172,19 +192,29 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 });
 
 
-app.controller('projectCreationController', function ($location, $http, $scope, ngDialog) {
+app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService) {
 
     function init() {
         console.log("init project controller");
         $scope.columnNames = ['col1', 'col2', 'col3'];
         $scope.dataFiles = [];
         $scope.message = "";
-    }
+        $scope.selectedColumnType = null;
+        $scope.selectedValueType = null;
+    } init();
 
-    init();
+
     $scope.fileNameChanged = function (input) {
         $scope.dataFiles[input.id.split(' ')[2]] = input.files[0];
     };
+
+    projectService.getColumnTypes().then(function(response) {
+        $scope.columnTypes = response.data;
+    });
+
+    projectService.getValueTypes().then(function(response) {
+        $scope.valueTypes = response.data;
+    });
 
     $scope.showPrompt = function () {
         ngDialog.close();

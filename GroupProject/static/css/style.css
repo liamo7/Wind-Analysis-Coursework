@@ -79,3 +79,8 @@ ul#toolbar-items {
 #toolbar-items li a {
     color:white;
 }
+
+
+.ngdialog.ngdialog-theme-plain.custom-width .ngdialog-content {
+    width: 150px;
+}

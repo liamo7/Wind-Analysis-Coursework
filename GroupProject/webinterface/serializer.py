@@ -19,7 +19,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'title', 'turbine')
+        fields = ('id', 'title', 'turbine', 'mastFile')
 
 
 class AnalysisSerializer(serializers.ModelSerializer):
@@ -29,3 +29,4 @@ class AnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = Analysis
         fields = ('id', 'title', 'project')
+

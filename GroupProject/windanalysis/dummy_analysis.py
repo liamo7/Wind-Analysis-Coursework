@@ -2,18 +2,15 @@ __author__ = 'brian'
 
 import os as os
 import matplotlib.pyplot as plt, mpld3
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import windAnalysis.calculation as calculation
 import windAnalysis.plotting as plotting
-from .project import *
 from .utility import *
-from webinterface.models import Turbine
+from webinterface.models import Turbine, Project
 from .ppaTypes import *
-from django.http import HttpResponse
 
 
 def dummy():
-    project = Project('Dummy_project', os.getcwd())
+    project = Project.objects.get(title='Project1')
     turbine = Turbine.objects.get(name='Nordex')
 
     project.defineTurbine(turbine)
@@ -24,7 +21,10 @@ def dummy():
     powerFile = project.addDatafile('dummy_power.txt', project.directory, FileType.POWER, columnSeparator='\t')
     lidarFile = project.addDatafile('dummy_lidar.txt', project.directory, FileType.LIDAR, columnSeparator='\t')
 
-    project.saveMetadata()
+    list = [windFile.filename, powerFile.filename, lidarFile.filename]
+    project.addDataFileNames(list)
+
+    #project.saveMetadata()
     print("Project setup complete")
 
     windFile.addColumn('Mast - 82m Wind Direction Mean',       1, ColumnType.WIND_DIRECTION,        ValueType.MEAN,               measurementHeight=82, instrumentCalibrationSlope=0.04581, instrumentCalibrationOffset=0.2638)
@@ -39,7 +39,7 @@ def dummy():
     windFile.saveMetadata()
 
     powerFile.addColumn('Power mean (kW)',            1,  ColumnType.POWER, ValueType.MEAN)
-    powerFile.saveMetadata()
+    #powerFile.saveMetadata()
 
     lidarFile.addColumn("LiDAR - 132.5m Wind Speed Mean",       1,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=132.5)
     lidarFile.addColumn("LiDAR - 127.5m Wind Speed Mean",       2,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=127.5)
@@ -62,7 +62,7 @@ def dummy():
     lidarFile.clean()
 
     combinedFile = synchroniseDataFiles('dummy_data.txt', project.directory, [windFile, powerFile, lidarFile])
-    combinedFile.saveMetadata()
+    #combinedFile.saveMetadata()
     combinedFile.saveToFile()
 
     print("File setup complete")

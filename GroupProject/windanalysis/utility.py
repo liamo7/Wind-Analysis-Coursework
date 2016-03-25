@@ -1,5 +1,5 @@
 __author__ = 'Brian'
-from .data import Datafile
+from webinterface.models import Datafile
 from .ppaTypes import *
 import pandas as pd
 

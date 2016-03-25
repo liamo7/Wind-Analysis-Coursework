@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from webinterface.views import ProjectViewSet, TurbineViewSet, AnalysisViewSet, index
+from webinterface.views import *
 from rest_framework_nested import routers
 
 router = routers.SimpleRouter()
@@ -26,6 +26,9 @@ router.register(r'analyses', AnalysisViewSet)
 urlpatterns = [
 
     url(r'^api/v1/', include(router.urls)),
+    url(r'^api/v1/columntypes', ColumnTypeViewSet.as_view()),
+    url(r'^api/v1/valuetypes', ValueTypeViewSet.as_view()),
+
     url(r'^admin/', admin.site.urls),
     url(r'^.*$', index, name='index'),
 ]

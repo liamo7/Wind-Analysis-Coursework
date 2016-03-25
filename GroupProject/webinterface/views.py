@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from django.http import HttpResponse
-from rest_framework import viewsets
+from rest_framework import viewsets, views
 from .models import Project, Turbine, Analysis
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer
 from django.shortcuts import get_object_or_404
 from windAnalysis.dummy_analysis import dummy
-
+from windAnalysis.ppaTypes import *
+import json
 
 def index(request):
     return render(request, 'base.html')
@@ -85,3 +86,19 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         serializer = AnalysisSerializer(Analysis.objects.filter(project=project), many=True)
         return Response(serializer.data)
 
+
+class ColumnTypeViewSet(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        myList = []
+        for colType in ColumnType:
+            myList.append(colType.name)
+        return Response(myList)
+
+class ValueTypeViewSet(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        myList = []
+        for valType in ValueType:
+            myList.append(valType.name)
+        return Response(myList)

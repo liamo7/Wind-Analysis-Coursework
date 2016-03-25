@@ -1,17 +1,21 @@
-<div class="ngdialog-message">
-    <link rel="stylesheet" href="static/css/ngDialog-theme-default.css" />
+<div class="ngdialog-message overideDialog">
     <h2>Column Selection</h2>
     <p>{[{message}]}</p>
 
 
-    <div style="height: 50vh;overflow-y: scroll;">
+    <div style="width: 50vh;overflow-y: scroll;">
         <div ng-repeat="colName in columnNames">
             <label>{[{ colName }]}</label>
             <select>
                 <option>Don't use</option>
             </select> <!-- column type -->
-            <select></select> <!-- column value type -->
-            <!-- additional params -->
+            <select ng-model="selectedColumnType">
+                <option ng-repeat="col in columnTypes" value="{[{ col }]}">{[{col}]}</option>
+            </select>
+
+            <select ng-model="selectedValueType">
+                <option ng-repeat="col in valueTypes" value="{[{ col }]}">{[{col}]}</option>
+            </select>
         </div>
     </div>
 

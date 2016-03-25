@@ -1,10 +1,12 @@
-from enum import Enum
+from enumfields import Enum
+
 
 class FileType(Enum):
     METEO = 1
     POWER = 2
     LIDAR = 3
     COMBINED = 4
+
 
 class ColumnType(Enum):
     TIMESTAMP = 1
@@ -22,6 +24,7 @@ class ColumnType(Enum):
     DERIVED = 13
     AVAILABILITY = 14
 
+
 class ValueType(Enum):
     TIMESTAMP = 1
     QUANTITY = 2
@@ -31,9 +34,11 @@ class ValueType(Enum):
     DERIVED = 6
     PERCENT = 7
 
+
 class FilterType(Enum):
     INCLUDE_DATA = 1
     EXCLUDE_TIMESTAMP = 2
+
 
 class BinStatus(Enum):
     MEASURED = 1
@@ -41,6 +46,7 @@ class BinStatus(Enum):
     EXCLUDED = 3
     PADDED = 4
     WARRANTED = 5
+
 
 class REWSMeasurementType(Enum):
     REMOTE_SENSING_DEVICE = 1

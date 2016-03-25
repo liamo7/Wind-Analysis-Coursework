@@ -1,7 +1,7 @@
 import configobj as cfg
-from .data import Datafile
-from webinterface.models import *
+from webinterface.models import Turbine, Datafile
 from .ppaTypes import *
+from .powerCurve import PowerCurve
 
 
 class Project(object):

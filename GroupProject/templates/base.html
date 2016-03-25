@@ -9,6 +9,13 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>		<!-- load bootstrap and fontawesome via CDN -->
         <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
         <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="stylesheet" href="{% static 'css/ngDialog-theme-default.css' %}">
+
+        <script src="{% static 'js/angular/angular.js' %}"></script>
+        <script src="{% static 'js/angular/angular-route.js' %}"></script>
+        <script src="{% static 'js/angular/angular-cookies.js' %}"></script>
+        <script src="{% static 'js/angular/ngDialog.js' %}"></script>
+        <script src="{% static 'js/webinterface/webinterface.js' %}"></script>
 	</head>
 	
 	<body ng-controller='mainController'>
@@ -58,12 +65,5 @@
 
             </div>
         </div>
-
-		<script src="{% static 'js/angular/angular.js' %}"></script>
-        <script src="{% static 'js/angular/angular-route.js' %}"></script>
-        <script src="{% static 'js/angular/angular-cookies.js' %}"></script>
-        <script src="{% static 'js/angular/ngDialog.js' %}"></script>
-        <script src="{% static 'js/webinterface/webinterface.js' %}"></script>
-
 	</body>
 </html> 
