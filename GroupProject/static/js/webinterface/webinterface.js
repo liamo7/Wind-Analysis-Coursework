@@ -166,7 +166,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
             mastFile: mastFile
         }).then(function (response) {
             $scope.loadProject(response.config.data);
-            $location.path('/project/' + title + '/files/upload/');
+            $location.path('/project/' + title);
         });
     };
 

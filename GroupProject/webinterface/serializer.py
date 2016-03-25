@@ -1,4 +1,4 @@
-from .models import Project, Turbine, Analysis
+from .models import Project, Turbine, Analysis, Column
 from rest_framework import serializers
 
 
@@ -30,3 +30,11 @@ class AnalysisSerializer(serializers.ModelSerializer):
         model = Analysis
         fields = ('id', 'title', 'project')
 
+
+class ColumnSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Column
+        fields = ('id', 'name', 'positionInFile', 'columnType', 'valueType', 'instrumentCalibrationSlope',
+                  'instrumentCalibrationOffset', 'dataLoggerCalibrationSlope', 'dataLoggerCalibrationOffset',
+                  'measurementHeight')

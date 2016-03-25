@@ -1,13 +1,11 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from django.http import HttpResponse
 from rest_framework import viewsets, views
-from .models import Project, Turbine, Analysis
-from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer
-from django.shortcuts import get_object_or_404
+from .models import Project, Turbine, Analysis, Column
+from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
 from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
-import json
+import jsonpickle
 
 def index(request):
     return render(request, 'base.html')
@@ -48,6 +46,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 print(serializer.validated_data)
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
+
+                windFile  = project.addDatafile('dummy_mast.txt', project.directory, FileType.METEO, columnSeparator='\t')
+                powerFile = project.addDatafile('dummy_power.txt', project.directory, FileType.POWER, columnSeparator='\t')
+                lidarFile = project.addDatafile('dummy_lidar.txt', project.directory, FileType.LIDAR, columnSeparator='\t')
+
+                list = [windFile.filename, powerFile.filename, lidarFile.filename]
+                project.addDataFileNames(list)
+
+                project.windDataFile = jsonpickle.encode(windFile)
+                project.powerDataFile = jsonpickle.encode(powerFile)
+                project.lidarDataFile = jsonpickle.encode(lidarFile)
+
+                project.save()
+
+                print("Project setup complete")
                 return Response()
 
         print(serializer.errors)
@@ -70,7 +83,13 @@ class AnalysisViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 print(serializer.validated_data)
                 Analysis.objects.create(project=project, **serializer.validated_data)
-                dummy()
+
+                windFile = jsonpickle.decode(project.windDataFile)
+                powerFile = jsonpickle.decode(project.powerDataFile)
+                lidarFile = jsonpickle.decode(project.lidarDataFile)
+
+                fileList = [windFile, powerFile, lidarFile]
+                dummy(project, fileList)
                 return Response()
 
         print(serializer.errors)
@@ -86,6 +105,10 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         serializer = AnalysisSerializer(Analysis.objects.filter(project=project), many=True)
         return Response(serializer.data)
 
+
+class ColumnViewSet(viewsets.ModelViewSet):
+    queryset = Column.objects.all()
+    serializer_class = ColumnSerializer
 
 class ColumnTypeViewSet(views.APIView):
 

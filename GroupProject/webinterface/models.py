@@ -126,10 +126,15 @@ class Project(models.Model):
     siteCalibrationFactors = {}
     datafiles = ArrayField(models.CharField(max_length=300, null=True, blank=True), blank=True, null=True)
 
+    windDataFile = JSONField(null=True, blank=True)
+    powerDataFile = JSONField(null=True, blank=True)
+    lidarDataFile = JSONField(null=True, blank=True)
+
     mastFile = models.FileField(upload_to=ProjectManager.getMastFilePath, blank=True, null=True)
 
     def __str__(self):
         return self.title
+
 
     def addDataFileNames(self, list):
         self.datafiles = list
@@ -158,30 +163,6 @@ class Project(models.Model):
             siteCalibrationFactorsDict.update({int(scf): {'slope': slope, 'offset': offset}})
         return siteCalibrationFactorsDict
 
-    def saveMetadata(self):
-        config = cfg.ConfigObj()
-        config['name'] = self.name
-        config['directory'] = self.directory
-        config['turbine'] = '' if self.turbine is None else self.turbine.name
-        config['datafiles'] = self.datafiles
-        config['siteCalibrationFactors'] = self.stringifySiteCalibrationFactors()
-
-        config.filename = self.directory + '/' + self.name + '.cfg'
-        config.write()
-        print("Project metadata saved")
-
-    def configFile(self):
-        return self.directory + '/' + self.name + ".cfg"
-
-    def loadMetadata(self):
-        config = cfg.ConfigObj(self.configFile())
-        self.name = config['name']
-        self.directory = config['directory']
-        self.turbine = Turbine(config['turbine'])
-        self.datafiles = config['datafiles']
-        self.siteCalibrationFactors = self.deStringifySiteCalibrationFactors(config['siteCalibrationFactors'])
-        print("Loaded project metadata: " + self.name)
-
     def makeMeasuredPowerCurve(self, data, windSpeedColumn, powerColumn, binColumn, binWidth=0.5, airDensity=1.225):
         grouped = data.groupby(binColumn).aggregate({windSpeedColumn: 'mean',
                                                     powerColumn: 'mean',
@@ -198,6 +179,7 @@ class Project(models.Model):
                                 referenceAirDensity=airDensity)
 
         return powerCurve.validated().padded()
+
 
 class Analysis(models.Model):
     title = models.CharField(max_length=200, unique=True, blank=False)
@@ -228,9 +210,13 @@ class Column(models.Model):
     superiorLimitHeight = models.FloatField(blank=True, null=True)
     segmentHeight = models.FloatField(blank=True, null=True)
 
-    def __str__(self):
-        return self.name
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
 
+    def __str__(self):
+        if self.project is not None:
+            return self.name + '(' + self.project.title + ')'
+        else:
+            return self.name
 
 
 class Datafile(object):
@@ -250,20 +236,17 @@ class Datafile(object):
     def fullyQualifiedPath(self):
         return self.directory + '/' + self.filename
 
-    def configFile(self):
-        return self.directory + '/' + self.filename.split('.')[0] + ".cfg"
-
     def addColumn(self, name, positionInFile, columnType, valueType,
                   instrumentName=None, instrumentMake=None, instrumentModel=None,
                   instrumentCalibrationSlope=1.0, instrumentCalibrationOffset=0.0,
                   dataLoggerCalibrationSlope=1.0, dataLoggerCalibrationOffset=0.0,
-                  measurementHeight=0.0):
+                  measurementHeight=0.0, project=None):
         self.columns.append(Column.objects.create(
             name=name, positionInFile=positionInFile, columnType=columnType,
             valueType=valueType, instrumentCalibrationSlope=instrumentCalibrationSlope,
             instrumentCalibrationOffset=instrumentCalibrationOffset,
             dataLoggerCalibrationOffset=dataLoggerCalibrationOffset,
-            dataLoggerCalibrationSlope=dataLoggerCalibrationSlope, measurementHeight=measurementHeight))
+            dataLoggerCalibrationSlope=dataLoggerCalibrationSlope, measurementHeight=measurementHeight, project=project))
 
     def getColumn(self, columnName):
         return [c for c in self.columns if c.name == columnName][0]
@@ -282,68 +265,6 @@ class Datafile(object):
     def saveToFile(self):
         self.data.to_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
         print("Data saved: " + self.filename)
-
-    def saveMetadata(self):
-        config = cfg.ConfigObj()
-        config['filename'] = self.filename
-        config['directory'] = self.directory
-        config['fileType'] = self.fileType
-        config['columnSeparator'] = self.columnSeparator
-        config['rowsToSkip'] = self.rowsToSkip
-        config['badDataValues'] = self.badDataValues
-        config['columns'] = {str(i): vars(column) for i, column in enumerate(self.columns)}
-        config['columnSets'] = self.columnSets
-        config['selectors'] = {str(i): selector for i, selector in enumerate(self.selectors)}
-        config.filename = self.configFile()
-        config.write()
-        print("Metadata saved: " + self.filename)
-
-    def loadMetadata(self):
-        config = cfg.ConfigObj(self.configFile())
-        self.filename = config['filename']
-        self.directory = config['directory']
-        self.fileType = FileType[config['fileType'].split('.')[1]]
-        self.columnSeparator = config['columnSeparator']
-        self.rowsToSkip = map(int, config['rowsToSkip'])
-        self.badDataValues = config['badDataValues']
-        for configColumn in sorted(config['columns'], key=int):
-            self.columns.append(
-                Column(config['columns'][configColumn]['name'],
-                       int(config['columns'][configColumn]['positionInFile']),
-                       ColumnType[config['columns'][configColumn]['columnType'].split('.')[1]],
-                       ValueType[config['columns'][configColumn]['valueType'].split('.')[1]],
-                       config['columns'][configColumn]['instrumentName'],
-                       config['columns'][configColumn]['instrumentMake'],
-                       config['columns'][configColumn]['instrumentModel'],
-                       float(config['columns'][configColumn]['instrumentCalibrationSlope']),
-                       float(config['columns'][configColumn]['instrumentCalibrationOffset']),
-                       float(config['columns'][configColumn]['dataLoggerCalibrationSlope']),
-                       float(config['columns'][configColumn]['dataLoggerCalibrationOffset']),
-                       float(config['columns'][configColumn]['measurementHeight']))
-            )
-        for configColumnSet in config['columnSets']:
-            self.columnSets[configColumnSet] = config['columnSets'][configColumnSet]
-        for configSelector in sorted(config['selectors'], key=int):
-            s = config['selectors'][configSelector]
-            try:
-                s['lowerLimit'] = float(s['lowerLimit'])
-            except:
-                pass
-            try:
-                s['upperLimit'] = float(s['upperLimit'])
-            except:
-                pass
-
-            self.addSelector(columnName=None if s['columnName'] == 'None' else s['columnName'],
-                             columnType=None if s['columnType'] == 'None' else ColumnType[s['columnType'].split('.')[1]],
-                             lowerLimit=s['lowerLimit'],
-                             upperLimit=s['upperLimit'],
-                             valueType=None if s['valueType'] == 'None' else ValueType[s['valueType'].split('.')[1]],
-                             includeRange=bool(s['includeRange']),
-                             rangeIncludesLowerBound=bool(s['rangeIncludesLowerBound']),
-                             rangeIncludesUpperBound=bool(s['rangeIncludesUpperBound']))
-        print("Metadata loaded: " + self.filename)
-
 
     def clean(self):
         rowsBeforeClean = len(self.data)
@@ -368,7 +289,6 @@ class Datafile(object):
         self.filename = newFileName
         self.directory = containingDirectory
         self.saveToFile()
-        self.saveMetadata()
         print("Datafile saved as: " + self.filename)
 
     def selectorFactory(self, columnName, operator, value):
@@ -435,7 +355,7 @@ class Datafile(object):
     def getColumnSet(self, columnSetName):
         return [c for c in self.columns if c.name in self.columnSets[columnSetName]]
 
-    def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED):
+    def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED, project=None):
 
         print('Adding ', newColumn, '... ', end=' ')
         if 'row' in getargspec(functionToApply).args:
@@ -447,7 +367,7 @@ class Datafile(object):
                 args = []
             self.data[newColumn] = functionToApply(*args, **kwargs)
 
-        self.addColumn(newColumn,len(self.columns)+1,columnType, valueType, measurementHeight=measurementHeightValue)
+        self.addColumn(newColumn,len(self.columns)+1,columnType, valueType, measurementHeight=measurementHeightValue, project=project)
         print("Done")
 
     def getHubHeightColumnName(self, turbine, columnType):
