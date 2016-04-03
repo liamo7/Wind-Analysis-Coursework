@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import viewsets, views
+from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 from .models import Project, Turbine, Analysis, Column
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
 from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
 import jsonpickle
+from GroupProject.settings import MEDIA_ROOT, MEDIA_URL
 
 def index(request):
     return render(request, 'base.html')
@@ -35,10 +37,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
+    #parser_classes = (FormParser, MultiPartParser)
+
     def create(self, request, *args, **kwargs):
 
         serializer = self.serializer_class(data=request.data)
+        print(request.data)
         print(serializer)
+
+        print(request.FILES)
 
         turbine = Turbine.objects.get(name=request.data['turbine']['name'])
 
@@ -47,9 +54,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 print(serializer.validated_data)
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
 
-                windFile  = project.addDatafile('dummy_mast.txt', project.directory, FileType.METEO, columnSeparator='\t')
-                powerFile = project.addDatafile('dummy_power.txt', project.directory, FileType.POWER, columnSeparator='\t')
-                lidarFile = project.addDatafile('dummy_lidar.txt', project.directory, FileType.LIDAR, columnSeparator='\t')
+                windFile  = project.addDatafile('mast.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.METEO, columnSeparator='\t')
+                powerFile = project.addDatafile('power.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.POWER, columnSeparator='\t')
+                lidarFile = project.addDatafile('lidar.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.LIDAR, columnSeparator='\t')
+
+                print(windFile)
 
                 list = [windFile.filename, powerFile.filename, lidarFile.filename]
                 project.addDataFileNames(list)
@@ -64,6 +73,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 return Response()
 
         print(serializer.errors)
+        return Response()
+
+    def update(self, request, *args, **kwargs):
+        print("Update Occur")
+        print(request.data)
+
+        project = Project.objects.get(title=request.data['projectTitle'])
+
+        if 'mastFile' in request.data:
+            project.mastFile = request.data['mastFile']
+
+        if 'lidarFile' in request.data:
+            project.lidarFile = request.data['lidarFile']
+
+        if 'powerFile' in request.data:
+            project.powerFile = request.data['powerFile']
+
+        project.save()
+
         return Response()
 
 

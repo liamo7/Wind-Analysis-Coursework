@@ -16,17 +16,22 @@ from inspect import getargspec
 from windAnalysis.ppaTypes import *
 import os as os
 
-
 class ProjectManager(models.Manager):
 
     def getLidarFilePath(self, fileName):
-        return '{0}\\rawDataFiles\{1}'.format(self.title, fileName)
+        return '{0}\\rawDataFiles\lidar.txt'.format(self.title)
 
     def getMastFilePath(self, fileName):
         return '{0}\\rawDataFiles\mast.txt'.format(self.title)
 
     def getPowerFilePath(self, fileName):
-        return '{0}\\rawDataFiles\{1}'.format(self.title, fileName)
+        return '{0}\\rawDataFiles\power.txt'.format(self.title)
+
+    def getSiteCalibrationFilePath(self, fileName):
+        return '{0}\sitecalibration\{1}'.format(self.title, fileName)
+
+    def getSynchronisedFilePath(self):
+        return '{0}\synced\synchronisedData.txt'.format(self.title)
 
 
 
@@ -123,14 +128,17 @@ class Project(models.Model):
     turbine = models.ForeignKey(Turbine, related_name='turbine', null=True)
 
     directory = models.CharField(max_length=600, default=os.getcwd())
-    siteCalibrationFactors = {}
     datafiles = ArrayField(models.CharField(max_length=300, null=True, blank=True), blank=True, null=True)
+
+    siteCalibrationFile = models.FileField(upload_to=ProjectManager.getSiteCalibrationFilePath, null=True, blank=True)
 
     windDataFile = JSONField(null=True, blank=True)
     powerDataFile = JSONField(null=True, blank=True)
     lidarDataFile = JSONField(null=True, blank=True)
 
     mastFile = models.FileField(upload_to=ProjectManager.getMastFilePath, blank=True, null=True)
+    lidarFile = models.FileField(upload_to=ProjectManager.getLidarFilePath, blank=True, null=True)
+    powerFile = models.FileField(upload_to=ProjectManager.getPowerFilePath, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -199,11 +207,11 @@ class Column(models.Model):
     positionInFile = models.IntegerField(blank=True, null=True)
     columnType = EnumField(ColumnType)
     valueType = EnumField(ValueType)
-    instrumentCalibrationSlope = models.FloatField(blank=True, null=True, default=1.0)
-    instrumentCalibrationOffset = models.FloatField(blank=True, null=True, default=0.0)
-    dataLoggerCalibrationSlope = models.FloatField(blank=True, null=True, default=1.0)
-    dataLoggerCalibrationOffset = models.FloatField(blank=True, null=True, default=0.0)
-    measurementHeight = models.FloatField(blank=True, null=True, default=0.0)
+    instrumentCalibrationSlope = models.FloatField(default=1.0)
+    instrumentCalibrationOffset = models.FloatField(default=0.0)
+    dataLoggerCalibrationSlope = models.FloatField(default=1.0)
+    dataLoggerCalibrationOffset = models.FloatField(default=0.0)
+    measurementHeight = models.FloatField(default=0.0)
 
     segmentWeighting = models.FloatField(blank=True, null=True)
     inferiorLimitHeight = models.FloatField(blank=True, null=True)

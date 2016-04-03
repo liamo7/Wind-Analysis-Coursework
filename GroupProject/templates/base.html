@@ -14,6 +14,7 @@
         <script src="{% static 'js/angular/angular.js' %}"></script>
         <script src="{% static 'js/angular/angular-route.js' %}"></script>
         <script src="{% static 'js/angular/angular-cookies.js' %}"></script>
+        <script src="{% static 'js/angular/ng-file-upload.min.js' %}"></script>
         <script src="{% static 'js/angular/ngDialog.js' %}"></script>
         <script src="{% static 'js/webinterface/webinterface.js' %}"></script>
 	</head>
@@ -34,6 +35,7 @@
                 <li ng-click="sidebarType = 'turbines'"><a href="">List Turbines</a></li>
                 <li ng-if="currentAnalysis != null" ng-click="closeAnalysis()"><a href="">Close Analysis</a></li>
                 <li ng-if="currentProject != null" ng-click="closeProject()"><a href="">Close Project</a></li>
+                <li ng-if="currentProject != null"><a href="/project/{[{currentProject.title}]}/files/upload">Upload Files</a></li>
             </ul>
 
         </div>

@@ -1,4 +1,4 @@
-var app = angular.module('webinterface', ['ngRoute', 'ngDialog']);
+var app = angular.module('webinterface', ['ngRoute', 'ngDialog', 'ngFileUpload']);
 
 
 app.config(function($locationProvider, $interpolateProvider, $routeProvider, $httpProvider) {
@@ -23,6 +23,10 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
 
         .when('/project/create', {
             templateUrl: '/static/templates/project/create.html'
+        })
+
+        .when('/project/:title/update', {
+            templateUrl: '/static/templates/project/update.html'
         })
 
         .when('/project/:title/files/upload', {
@@ -85,7 +89,7 @@ app.factory('projectService', function($http, $routeParams) {
 });
 
 
-app.controller('mainController', function($location, $http, $scope, projectService) {
+app.controller('mainController', function($location, $http, $scope, projectService, Upload) {
 
     function init() {
         console.log("init");
@@ -96,6 +100,17 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.currentAnalysis = null;
         $location.path('/');
     } init();
+
+    $scope.uploadFiles = function(mastFile, lidarFile, powerFile) {
+
+        Upload.upload({
+                url: '/api/v1/projects/' + $scope.currentProject.title + '/',
+                data: {powerFile: powerFile, mastFile: mastFile, lidarFile: lidarFile, projectTitle: $scope.currentProject.title},
+                method: 'put'
+            }).then(function (resp) {
+                console.log('Success uploaded. Response: ' + resp.data);
+        });
+    }
 
 
     function closeAnalysis() {
@@ -154,16 +169,15 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         });
     };
 
-    $scope.createProject = function(title, description, turbine, mastFile) {
+    $scope.createProject = function(title, description, turbine) {
 
         projectService.getColumnTypes();
-        alert(mastFile);
+
 
         return $http.post('/api/v1/projects/', {
             title: title,
             description: description,
-            turbine: JSON.parse(turbine),
-            mastFile: mastFile
+            turbine: JSON.parse(turbine)
         }).then(function (response) {
             $scope.loadProject(response.config.data);
             $location.path('/project/' + title);
@@ -206,6 +220,8 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
     $scope.fileNameChanged = function (input) {
         $scope.dataFiles[input.id.split(' ')[2]] = input.files[0];
+        $scope.mastFile = input.files[0];
+        alert($scope.mastFile.name);
     };
 
     projectService.getColumnTypes().then(function(response) {
