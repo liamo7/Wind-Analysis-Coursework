@@ -89,7 +89,7 @@ app.factory('projectService', function($http, $routeParams) {
 });
 
 
-app.controller('mainController', function($location, $http, $scope, projectService, Upload) {
+app.controller('mainController', function($location, $http, $scope, projectService) {
 
     function init() {
         console.log("init");
@@ -100,17 +100,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.currentAnalysis = null;
         $location.path('/');
     } init();
-
-    $scope.uploadFiles = function(mastFile, lidarFile, powerFile) {
-
-        Upload.upload({
-                url: '/api/v1/projects/' + $scope.currentProject.title + '/',
-                data: {powerFile: powerFile, mastFile: mastFile, lidarFile: lidarFile, projectTitle: $scope.currentProject.title},
-                method: 'put'
-            }).then(function (resp) {
-                console.log('Success uploaded. Response: ' + resp.data);
-        });
-    }
 
 
     function closeAnalysis() {
@@ -206,7 +195,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 });
 
 
-app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService) {
+app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService, Upload) {
 
     function init() {
         console.log("init project controller");
@@ -217,6 +206,16 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         $scope.selectedValueType = null;
     } init();
 
+    $scope.uploadFiles = function(mastFile, lidarFile, powerFile) {
+
+        Upload.upload({
+                url: '/api/v1/projects/' + $scope.currentProject.title + '/',
+                data: {powerFile: powerFile, mastFile: mastFile, lidarFile: lidarFile, projectTitle: $scope.currentProject.title},
+                method: 'put'
+            }).then(function (resp) {
+                console.log('Success uploaded. Response: ' + resp.data);
+        });
+    }
 
     $scope.fileNameChanged = function (input) {
         $scope.dataFiles[input.id.split(' ')[2]] = input.files[0];
