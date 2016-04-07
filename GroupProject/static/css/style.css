@@ -30,12 +30,14 @@ div#header {
 
 div#wrapper {
     width: 100%;
+    position: fixed;
+    height: calc(100vh - 50px);
     margin: 0 auto;
 }
 
 .sidebar {
     width: 250px;
-    height: 100vh;
+    height: 100%;
     background-color: #cccccc;
     float: left;
     overflow-y: scroll;
@@ -52,7 +54,7 @@ div#sidebar-title-wrapper h3 {
 
 .content-wrapper {
     width: auto;
-    height: 100vh;
+    height: 100%;
 }
 
 .navbar {

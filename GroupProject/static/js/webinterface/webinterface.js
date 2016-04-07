@@ -42,7 +42,7 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
         })
 
         .when('/turbine/create', {
-            templateUrl: '/static/templates/project/create.html'
+            templateUrl: '/static/templates/turbine/create.html'
         })
 
         .when('/project/analysis/analysis/create', {
@@ -200,17 +200,14 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
     function init() {
         console.log("init project controller");
         $scope.columnNames = ['col1', 'col2', 'col3'];
-        $scope.dataFiles = [];
-        $scope.message = "";
-        $scope.selectedColumnType = null;
-        $scope.selectedValueType = null;
+        $scope.fileData = {};
+        $scope.fileType = null;
     } init();
 
     $scope.uploadFiles = function(mastFile, lidarFile, powerFile) {
-
         Upload.upload({
                 url: '/api/v1/projects/' + $scope.currentProject.title + '/',
-                data: {powerFile: powerFile, mastFile: mastFile, lidarFile: lidarFile, projectTitle: $scope.currentProject.title},
+                data: {headerData: $scope.fileData, powerFile: powerFile, mastFile: mastFile, lidarFile: lidarFile, projectTitle: $scope.currentProject.title},
                 method: 'put'
             }).then(function (resp) {
                 console.log('Success uploaded. Response: ' + resp.data);
@@ -218,7 +215,46 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
     }
 
     $scope.fileNameChanged = function (input) {
-        $scope.dataFiles[input.id.split(' ')[2]] = input.files[0];
+        $scope.fileType = input.id;
+        delete $scope.fileData[$scope.fileType];
+
+        var file = input.files[0];
+
+        $scope.columnNames = [];
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var fileContents = e.target.result;
+            var columnHeaders = fileContents.split('\n')[0].split('\t');
+            for(var i = 0; i < columnHeaders.length; i++){
+                columnHeaders[i] = columnHeaders[i];
+            }
+
+            $scope.columnNames = $scope.columnNames.concat(columnHeaders);
+            ngDialog.openConfirm({
+                    template: '/static/templates/project/selectHeaders.html',
+                    scope: $scope, //Pass the scope object if you need to access in the template
+                }).then(
+                function (value) {
+                    //save the contact form
+                    for(var key in $scope.fileData[$scope.fileType]){
+                        if($scope.fileData[$scope.fileType][key].toUse === false) {
+                            delete $scope.fileData[$scope.fileType][key];
+                        }else{
+                            $scope.fileData[$scope.fileType][key].colType = $scope.columnTypes.indexOf($scope.fileData[$scope.fileType][key].colType);
+                            $scope.fileData[$scope.fileType][key].valType = $scope.valueTypes.indexOf($scope.fileData[$scope.fileType][key].valType);
+                        }
+                    }
+                    alert(JSON.stringify($scope.fileData));
+                    $scope.fileType = null;
+                },
+                function (value) {
+                    //Cancel or do nothing
+                    delete $scope.fileData[$scope.fileType];
+                    $scope.fileType = null;
+                });
+            }
+            reader.readAsText(file);
     };
 
     projectService.getColumnTypes().then(function(response) {
@@ -228,60 +264,6 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
     projectService.getValueTypes().then(function(response) {
         $scope.valueTypes = response.data;
     });
-
-    $scope.showPrompt = function () {
-        ngDialog.close();
-
-        $scope.columnNames = [];
-        $scope.message = "";
-
-        var reader = new FileReader();
-        function readFile(index) {
-            if (index >= $scope.dataFiles.length) {
-                ngDialog.openConfirm({
-                    template: '/static/templates/project/selectHeaders.html',
-                    scope: $scope, //Pass the scope object if you need to access in the template
-                }).then(
-                    function (value) {
-                        //save the contact form
-                    },
-                    function (value) {
-                        //Cancel or do nothing
-                    });
-                return;
-            }
-
-            var file = $scope.dataFiles[index];
-            reader.onload = function (e) {
-
-                var fileContents = e.target.result;
-                var columnHeaders = fileContents.split('\n')[0].split('\t');
-                for(i = 0; i < columnHeaders.length; i++){
-                    columnHeaders[i] = file.name + " | " + columnHeaders[i];
-                }
-
-                var duplicate = false;
-                for (i = 0; i < index; i++) {
-                    if (i != index) {
-                        if ($scope.dataFiles[i].name == file.name) {
-                            duplicate = true;
-                        }
-                    }
-                }
-                if(!duplicate) {
-                    $scope.columnNames = $scope.columnNames.concat(columnHeaders);
-                }else{
-                    $scope.message = "Duplicate files ignored";
-                }
-
-                readFile(index + 1)
-            }
-            reader.readAsText(file);
-        }
-
-        readFile(0);
-
-    };
 
 });
 
