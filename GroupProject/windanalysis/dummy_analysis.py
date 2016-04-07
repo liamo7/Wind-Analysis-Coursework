@@ -10,57 +10,66 @@ from .ppaTypes import *
 
 
 def dummy(project, fileList):
-    # project = Project.objects.get(title='Project1')
-    # turbine = Turbine.objects.get(name='Nordex')
-    #
-    # project.defineTurbine(turbine)
-    #
-    # os.chdir(project.directory)
-    #
-    # windFile  = project.addDatafile('dummy_mast.txt', project.directory, FileType.METEO, columnSeparator='\t')
-    # powerFile = project.addDatafile('dummy_power.txt', project.directory, FileType.POWER, columnSeparator='\t')
-    # lidarFile = project.addDatafile('dummy_lidar.txt', project.directory, FileType.LIDAR, columnSeparator='\t')
-    #
-    # list = [windFile.filename, powerFile.filename, lidarFile.filename]
-    # project.addDataFileNames(list)
+
+    print("HERTE")
+
+    windFile = None
+    powerFile = None
+    lidarFile = None
+
+    if 'windDataFile' in fileList:
+        windFile = fileList['windDataFile']
+
+    if 'powerDataFile' in fileList:
+        powerFile = fileList['powerDataFile']
+
+    if 'lidarDataFile' in fileList:
+        lidarFile = fileList['lidarDataFile']
+
+    if windFile is None and powerFile is None and lidarFile is None:
+        return
+
+    files = []
 
 
-    windFile = fileList[0]
-    powerFile = fileList[1]
-    lidarFile = fileList[2]
 
-    windFile.addColumn('Mast - 82m Wind Direction Mean',       1, ColumnType.WIND_DIRECTION,        ValueType.MEAN,               measurementHeight=82, instrumentCalibrationSlope=0.04581, instrumentCalibrationOffset=0.2638, project=project)
-    windFile.addColumn('Mast - 80m Wind Speed Mean',       2, ColumnType.WIND_SPEED,        ValueType.MEAN,               measurementHeight=80, instrumentCalibrationSlope=0.04577, instrumentCalibrationOffset=0.2653, project=project)
-    windFile.addColumn('Mast - 80m Wind Speed Std Dev',       3, ColumnType.WIND_SPEED,        ValueType.STANDARD_DEVIATION,               measurementHeight=80, instrumentCalibrationSlope=0.04577, instrumentCalibrationOffset=0.2688, project=project)
-    windFile.addColumn('Mast - 64m Wind Speed Mean',       4, ColumnType.WIND_SPEED,        ValueType.MEAN,               measurementHeight=64, instrumentCalibrationSlope=0.04583, instrumentCalibrationOffset=0.2621, project=project)
-    windFile.addColumn('Mast - 35.0m Wind Speed Mean',       5, ColumnType.WIND_SPEED,        ValueType.MEAN, measurementHeight=35, instrumentCalibrationSlope=0.04581, dataLoggerCalibrationSlope=0.0462, project=project)
-    windFile.addColumn('Pressure (mBar)',       6, ColumnType.PRESSURE,          ValueType.MEAN,               measurementHeight=30, project=project)
-    windFile.addColumn('Relative humidity (%)',               7, ColumnType.RELATIVE_HUMIDITY, ValueType.MEAN,               measurementHeight=30, project=project)
-    windFile.addColumn('Temperature (C)',          8, ColumnType.TEMPERATURE,       ValueType.MEAN,               measurementHeight=30, project=project)
-    windFile.addColumnSet('anemometers', ['Mast - 80m Wind Speed Mean','Mast - 64m Wind Speed Mean','Mast - 35.0m Wind Speed Mean'])
+    if windFile:
+        windFile.addColumn('Mast - 82m Wind Direction Mean',       1, ColumnType.WIND_DIRECTION,        ValueType.MEAN,               measurementHeight=82, instrumentCalibrationSlope=0.04581, instrumentCalibrationOffset=0.2638, project=project)
+        windFile.addColumn('Mast - 80m Wind Speed Mean',       2, ColumnType.WIND_SPEED,        ValueType.MEAN,               measurementHeight=80, instrumentCalibrationSlope=0.04577, instrumentCalibrationOffset=0.2653, project=project)
+        windFile.addColumn('Mast - 80m Wind Speed Std Dev',       3, ColumnType.WIND_SPEED,        ValueType.STANDARD_DEVIATION,               measurementHeight=80, instrumentCalibrationSlope=0.04577, instrumentCalibrationOffset=0.2688, project=project)
+        windFile.addColumn('Mast - 64m Wind Speed Mean',       4, ColumnType.WIND_SPEED,        ValueType.MEAN,               measurementHeight=64, instrumentCalibrationSlope=0.04583, instrumentCalibrationOffset=0.2621, project=project)
+        windFile.addColumn('Mast - 35.0m Wind Speed Mean',       5, ColumnType.WIND_SPEED,        ValueType.MEAN, measurementHeight=35, instrumentCalibrationSlope=0.04581, dataLoggerCalibrationSlope=0.0462, project=project)
+        windFile.addColumn('Pressure (mBar)',       6, ColumnType.PRESSURE,          ValueType.MEAN,               measurementHeight=30, project=project)
+        windFile.addColumn('Relative humidity (%)',               7, ColumnType.RELATIVE_HUMIDITY, ValueType.MEAN,               measurementHeight=30, project=project)
+        windFile.addColumn('Temperature (C)',          8, ColumnType.TEMPERATURE,       ValueType.MEAN,               measurementHeight=30, project=project)
+        windFile.addColumnSet('anemometers', ['Mast - 80m Wind Speed Mean','Mast - 64m Wind Speed Mean','Mast - 35.0m Wind Speed Mean'])
+        windFile.loadFromFile()
+        windFile.clean()
+        files.append(windFile)
 
-    powerFile.addColumn('Power mean (kW)',            1,  ColumnType.POWER, ValueType.MEAN, project=project)
+    if powerFile:
+        powerFile.addColumn('Power mean (kW)', 1,  ColumnType.POWER, ValueType.MEAN, project=project)
+        powerFile.loadFromFile()
+        powerFile.clean()
+        files.append(powerFile)
 
-    lidarFile.addColumn("LiDAR - 132.5m Wind Speed Mean",       1,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=132.5, project=project)
-    lidarFile.addColumn("LiDAR - 127.5m Wind Speed Mean",       2,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=127.5, project=project)
-    lidarFile.addColumn("LiDAR - 117.5m Wind Speed Mean",       3,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=117.5, project=project)
-    lidarFile.addColumn("LiDAR - 107.5m Wind Speed Mean",       4,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=107.5, project=project)
-    lidarFile.addColumn("LiDAR - 97.5m Wind Speed Mean",       5,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=97.5, project=project)
-    lidarFile.addColumn("LiDAR - 87.5m Wind Speed Mean",       6,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=87.5, project=project)
-    lidarFile.addColumn("LiDAR - 77.5m Wind Speed Mean",       7,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=77.5, project=project)
-    lidarFile.addColumn("LiDAR - 67.5m Wind Speed Mean",       8,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=67.5, project=project)
-    lidarFile.addColumn("LiDAR - 57.5m Wind Speed Mean",       9,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=57.5, project=project)
-    lidarFile.addColumn("LiDAR - 42.5m Wind Speed Mean",       10,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=42.5, project=project)
+    if lidarFile:
+        lidarFile.addColumn("LiDAR - 132.5m Wind Speed Mean",       1,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=132.5, project=project)
+        lidarFile.addColumn("LiDAR - 127.5m Wind Speed Mean",       2,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=127.5, project=project)
+        lidarFile.addColumn("LiDAR - 117.5m Wind Speed Mean",       3,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=117.5, project=project)
+        lidarFile.addColumn("LiDAR - 107.5m Wind Speed Mean",       4,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=107.5, project=project)
+        lidarFile.addColumn("LiDAR - 97.5m Wind Speed Mean",       5,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=97.5, project=project)
+        lidarFile.addColumn("LiDAR - 87.5m Wind Speed Mean",       6,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=87.5, project=project)
+        lidarFile.addColumn("LiDAR - 77.5m Wind Speed Mean",       7,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=77.5, project=project)
+        lidarFile.addColumn("LiDAR - 67.5m Wind Speed Mean",       8,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=67.5, project=project)
+        lidarFile.addColumn("LiDAR - 57.5m Wind Speed Mean",       9,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=57.5, project=project)
+        lidarFile.addColumn("LiDAR - 42.5m Wind Speed Mean",       10,ColumnType.WIND_SPEED, ValueType.MEAN, measurementHeight=42.5, project=project)
+        lidarFile.loadFromFile()
+        lidarFile.clean()
+        files.append(lidarFile)
 
-    windFile.loadFromFile()
-    powerFile.loadFromFile()
-    lidarFile.loadFromFile()
 
-    windFile.clean()
-    powerFile.clean()
-    lidarFile.clean()
-
-    combinedFile = synchroniseDataFiles('dummy_data.txt', project.directory, [windFile, powerFile, lidarFile])
+    combinedFile = synchroniseDataFiles('dummy_data.txt', project.directory, files)
     combinedFile.saveToFile()
 
     print("File setup complete")
@@ -109,4 +118,17 @@ def dummy(project, fileList):
     plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
 
     mpld3.save_html(fg, 'templates/project/test.html')
+
+
+# mock dict for columns
+
+def normaliseColData(data):
+    col = {'header': 'Mast - 82m Wind Direction Mean', 'colType': 'WIND_DIRECTION', 'valType': 'MEAN',
+           'measurementHeight': 82, 'instrumentCalibrationSlope': 0.04581, 'instrumentCalibrationOffset': 0.2638,
+           'dataLoggerCalibrationSlope': 0.0462, 'dataLoggerCalibrationOffset': 0.04321};
+
+
+
+
+
 

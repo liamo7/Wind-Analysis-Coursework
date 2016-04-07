@@ -42,53 +42,39 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         serializer = self.serializer_class(data=request.data)
-        print(request.data)
-        print(serializer)
-
-        print(request.FILES)
-
         turbine = Turbine.objects.get(name=request.data['turbine']['name'])
 
         if turbine:
             if serializer.is_valid():
-                print(serializer.validated_data)
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
-
-                windFile  = project.addDatafile('mast.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.METEO, columnSeparator='\t')
-                powerFile = project.addDatafile('power.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.POWER, columnSeparator='\t')
-                lidarFile = project.addDatafile('lidar.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.LIDAR, columnSeparator='\t')
-
-                print(windFile)
-
-                list = [windFile.filename, powerFile.filename, lidarFile.filename]
-                project.addDataFileNames(list)
-
-                project.windDataFile = jsonpickle.encode(windFile)
-                project.powerDataFile = jsonpickle.encode(powerFile)
-                project.lidarDataFile = jsonpickle.encode(lidarFile)
-
                 project.save()
 
                 print("Project setup complete")
-                return Response()
+                return Response(data={"success": "Project Created."})
 
         print(serializer.errors)
         return Response()
 
     def update(self, request, *args, **kwargs):
-        print("Update Occur")
-        print(request.data)
 
         project = Project.objects.get(title=request.data['projectTitle'])
 
         if 'mastFile' in request.data:
             project.mastFile = request.data['mastFile']
+            mastFile = project.addDatafile('mast.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.METEO, columnSeparator='\t')
+            project.windDataFile = jsonpickle.encode(mastFile)
 
         if 'lidarFile' in request.data:
             project.lidarFile = request.data['lidarFile']
+            lidarFile = project.addDatafile('lidar.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
+                                FileType.LIDAR, columnSeparator='\t')
+            project.lidarDataFile = jsonpickle.encode(lidarFile)
 
         if 'powerFile' in request.data:
             project.powerFile = request.data['powerFile']
+            powerFile = project.addDatafile('power.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
+                            FileType.POWER, columnSeparator='\t')
+            project.powerDataFile = jsonpickle.encode(powerFile)
 
         project.save()
 
@@ -112,11 +98,17 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 print(serializer.validated_data)
                 Analysis.objects.create(project=project, **serializer.validated_data)
 
-                windFile = jsonpickle.decode(project.windDataFile)
-                powerFile = jsonpickle.decode(project.powerDataFile)
-                lidarFile = jsonpickle.decode(project.lidarDataFile)
+                fileList = {}
 
-                fileList = [windFile, powerFile, lidarFile]
+                if project.windDataFile:
+                    fileList['windDataFile'] = jsonpickle.decode(project.windDataFile)
+
+                if project.powerDataFile:
+                    fileList['powerDataFile'] = jsonpickle.decode(project.powerDataFile)
+
+                if project.lidarDataFile:
+                    fileList['lidarDataFile'] = jsonpickle.decode(project.lidarDataFile)
+
                 dummy(project, fileList)
                 return Response()
 

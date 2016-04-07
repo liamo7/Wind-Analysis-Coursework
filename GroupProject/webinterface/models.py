@@ -128,7 +128,7 @@ class Project(models.Model):
     turbine = models.ForeignKey(Turbine, related_name='turbine', null=True)
 
     directory = models.CharField(max_length=600, default=os.getcwd())
-    datafiles = ArrayField(models.CharField(max_length=300, null=True, blank=True), blank=True, null=True)
+    #datafiles = ArrayField(models.CharField(max_length=2000, null=True, blank=True), blank=True, null=True, max_length=2000)
 
     siteCalibrationFile = models.FileField(upload_to=ProjectManager.getSiteCalibrationFilePath, null=True, blank=True)
 
@@ -146,6 +146,7 @@ class Project(models.Model):
 
     def addDataFileNames(self, list):
         self.datafiles = list
+        print("HERE")
         self.save()
 
     def addDatafile(self, name=None, containingDirectory=None, fileType=None, rowsToSkip=[], columnSeparator='\t', badDataValues=[]):

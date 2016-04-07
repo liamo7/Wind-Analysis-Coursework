@@ -219,8 +219,6 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
     $scope.fileNameChanged = function (input) {
         $scope.dataFiles[input.id.split(' ')[2]] = input.files[0];
-        $scope.mastFile = input.files[0];
-        alert($scope.mastFile.name);
     };
 
     projectService.getColumnTypes().then(function(response) {
@@ -335,3 +333,35 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
     };
 
 });
+
+
+
+
+
+
+/*
+    data = {'col':
+        {
+            'header': 'Mast - 82m Wind Direction Mean',
+            'colType': 'WIND_DIRECTION',
+            'valType': 'MEAN',
+            'measurementHeight': 8,
+            'instrumentCalibrationSlope': 0.04581,
+            'instrumentCalibrationOffset': 0.2638,
+            'dataLoggerCalibrationSlope': 0.0462,
+            'dataLoggerCalibrationOffset': 0.04321
+        },
+
+        'col': {
+            'header': '80m Wind Speed Mean',
+            'colType': 'WIND_SPEED',
+            'valType': 'MEAN',
+            'measurementHeight': 80,
+            'instrumentCalibrationSlope': 0.04581,
+            'instrumentCalibrationOffset': 0.2638,
+            'dataLoggerCalibrationSlope': 0.0462,
+            'dataLoggerCalibrationOffset': 0.04321
+        }
+    }
+
+ */
