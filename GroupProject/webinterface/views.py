@@ -1,13 +1,17 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import viewsets, views
-from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
-from .models import Project, Turbine, Analysis, Column
+from .models import Project, Turbine, Analysis, Column, Datafile
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
 from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
 import jsonpickle
-from GroupProject.settings import MEDIA_ROOT, MEDIA_URL
+from windAnalysis.utility import synchroniseDataFiles
+from webinterface.testData import getWindTestData, getLidarTestData, getPowerTestData
+import json
+from .datamodel import TestData
+from .utils import PythonObjectEncoder, as_python_object
+
 
 def index(request):
     return render(request, 'base.html')
@@ -59,25 +63,67 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         project = Project.objects.get(title=request.data['projectTitle'])
 
+        files = []
+
         if 'mastFile' in request.data:
             project.mastFile = request.data['mastFile']
             mastFile = project.addDatafile('mast.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.METEO, columnSeparator='\t')
-            project.windDataFile = jsonpickle.encode(mastFile)
+            project.save()
+            data = getWindTestData()
+
+            addDataToFile(mastFile, data, project)
+            jsonDataFile = json.dumps(mastFile, cls=PythonObjectEncoder)
+
+            mastFile.loadFromFile()
+            mastFile.clean()
+            files.append(mastFile)
+
+            project.windDataFile = jsonDataFile
+            project.save()
 
         if 'lidarFile' in request.data:
             project.lidarFile = request.data['lidarFile']
             lidarFile = project.addDatafile('lidar.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
                                 FileType.LIDAR, columnSeparator='\t')
-            project.lidarDataFile = jsonpickle.encode(lidarFile)
+            data = getLidarTestData()
+
+            addDataToFile(lidarFile, data, project)
+            jsonDataFile = json.dumps(lidarFile, cls=PythonObjectEncoder)
+
+            lidarFile.loadFromFile()
+            lidarFile.clean()
+            files.append(lidarFile)
+
+            project.lidarDataFile = jsonDataFile
+            project.save()
 
         if 'powerFile' in request.data:
             project.powerFile = request.data['powerFile']
             powerFile = project.addDatafile('power.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
                             FileType.POWER, columnSeparator='\t')
-            project.powerDataFile = jsonpickle.encode(powerFile)
+
+            data = getPowerTestData()
+            addDataToFile(powerFile, data, project)
+            jsonDataFile = json.dumps(powerFile, cls=PythonObjectEncoder)
+
+            powerFile.loadFromFile()
+            powerFile.clean()
+            files.append(powerFile)
+
+            project.powerDataFile = jsonDataFile
+            project.save()
 
         project.save()
 
+
+        if files is not None:
+            combinedFile = synchroniseDataFiles('dummy_data.txt', project.getCombinedFilePath(), files)
+            combinedFile.saveToFile()
+
+            jsonCombined = json.dumps(combinedFile, cls=PythonObjectEncoder)
+            project.combinedDataFile = jsonCombined
+
+        project.save()
         return Response()
 
 
@@ -98,18 +144,22 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 print(serializer.validated_data)
                 Analysis.objects.create(project=project, **serializer.validated_data)
 
-                fileList = {}
+                files = []
 
                 if project.windDataFile:
-                    fileList['windDataFile'] = jsonpickle.decode(project.windDataFile)
+                    files.append(json.loads(project.windDataFile, object_hook=as_python_object))
 
                 if project.powerDataFile:
-                    fileList['powerDataFile'] = jsonpickle.decode(project.powerDataFile)
+                    files.append(json.loads(project.powerDataFile, object_hook=as_python_object))
 
                 if project.lidarDataFile:
-                    fileList['lidarDataFile'] = jsonpickle.decode(project.lidarDataFile)
+                    files.append(json.loads(project.lidarDataFile, object_hook=as_python_object))
 
-                dummy(project, fileList)
+                if project.combinedDataFile:
+                    files.append(json.loads(project.combinedDataFile, object_hook=as_python_object))
+
+
+                dummy(project, files)
                 return Response()
 
         print(serializer.errors)
@@ -145,3 +195,13 @@ class ValueTypeViewSet(views.APIView):
         for valType in ValueType:
             myList.append(valType.name)
         return Response(myList)
+
+
+
+def addDataToFile(dataFile, data, project):
+
+    for key, val in data.items():
+        if 'columnSet' in val:
+            dataFile.addColumnSet(**val)
+        else:
+            dataFile.addColumn(project=project, **val)

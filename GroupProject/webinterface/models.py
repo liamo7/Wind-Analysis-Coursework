@@ -6,15 +6,12 @@ from enumfields import EnumField
 from windAnalysis.ppaTypes import *
 import pandas as pd
 import numpy as np
-import operator as op
-import pandas as pd
-import numpy as np
 import windAnalysis.calculation as calc
-import configobj as cfg
 import operator as op
-from inspect import getargspec
+from inspect import signature
 from windAnalysis.ppaTypes import *
 import os as os
+from GroupProject.settings import MEDIA_ROOT
 
 class ProjectManager(models.Manager):
 
@@ -32,6 +29,9 @@ class ProjectManager(models.Manager):
 
     def getSynchronisedFilePath(self):
         return '{0}\synced\synchronisedData.txt'.format(self.title)
+
+    def getCombinedFilePath(self):
+        return '{0}\combined\\'
 
 
 
@@ -135,6 +135,7 @@ class Project(models.Model):
     windDataFile = JSONField(null=True, blank=True)
     powerDataFile = JSONField(null=True, blank=True)
     lidarDataFile = JSONField(null=True, blank=True)
+    combinedDataFile = JSONField(null=True, blank=True)
 
     mastFile = models.FileField(upload_to=ProjectManager.getMastFilePath, blank=True, null=True)
     lidarFile = models.FileField(upload_to=ProjectManager.getLidarFilePath, blank=True, null=True)
@@ -143,10 +144,12 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
+    def getCombinedFilePath(self):
+        return MEDIA_ROOT + '\{0}\combined\\'.format(self.title)
+
 
     def addDataFileNames(self, list):
         self.datafiles = list
-        print("HERE")
         self.save()
 
     def addDatafile(self, name=None, containingDirectory=None, fileType=None, rowsToSkip=[], columnSeparator='\t', badDataValues=[]):
@@ -154,7 +157,6 @@ class Project(models.Model):
 
     def defineTurbine(self, turbine):
         self.turbine = turbine
-        print("Turbine: " + self.turbine.name)
 
     def stringifySiteCalibrationFactors(self):
         siteCalibrationFactorsAsStrings = {}
@@ -240,7 +242,7 @@ class Datafile(object):
         self.badDataValues = badDataValues
         self.selectors = []
         self.rewsLevels = {}
-        print("Datafile: " + self.filename)
+        #print("Datafile: " + self.filename)
 
     def fullyQualifiedPath(self):
         return self.directory + '/' + self.filename
@@ -367,7 +369,7 @@ class Datafile(object):
     def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED, project=None):
 
         print('Adding ', newColumn, '... ', end=' ')
-        if 'row' in getargspec(functionToApply).args:
+        if 'row' in signature(functionToApply).parameters:
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:
             if columnArguments != ():

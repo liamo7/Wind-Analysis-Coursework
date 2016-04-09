@@ -2,10 +2,15 @@ __author__ = 'Brian'
 from webinterface.models import Datafile
 from .ppaTypes import *
 import pandas as pd
+import os
 
 # TODO: Move this to data.py, add datafile sources and rename function to 'recreate file from source' or similar
 def synchroniseDataFiles(newFilePath, containingDirectory, dataFiles):
-    synchronisedFile = Datafile(newFilePath, containingDirectory, FileType.COMBINED)
+
+    if not os.path.exists(containingDirectory):
+        os.makedirs(containingDirectory)
+
+    synchronisedFile = Datafile('combined.txt', containingDirectory, FileType.COMBINED)
 
     columnNumber = 1
     for f in dataFiles:
