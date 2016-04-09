@@ -14,6 +14,7 @@
                     <label>Power File</label>
                     <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="powerFile" ngf-select ng-model="powerFile"/>
 
+
                     <button type="submit" ng-click="uploadFiles(mastFile, lidarFile, powerFile)">Submit</button>
                 </form>
 

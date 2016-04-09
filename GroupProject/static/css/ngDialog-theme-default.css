@@ -56,9 +56,10 @@
 
 .ngdialog.ngdialog-theme-default {
   z-index:1;
-  position:absolute;
-  left: 50%;
-  top: 50%;
+  position:fixed;
+  left:30%;
+  top:10%;
+  max-width:60%;
 }
 
 .ngdialog.ngdialog-theme-default.ngdialog-closing .ngdialog-content {
@@ -73,13 +74,12 @@
   border-radius: 5px;
   color: #444;
   font-family: 'Helvetica',sans-serif;
-  font-size: 1.1em;
+  font-size: 1.0em;
   line-height: 1.5em;
   margin: 0 auto;
   max-width: 100%;
   padding: 1em;
   position: relative;
-  width: 450px;
 }
 
 .ngdialog.ngdialog-theme-default .ngdialog-close {
