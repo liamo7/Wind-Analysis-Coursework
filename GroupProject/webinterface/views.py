@@ -1,17 +1,14 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import viewsets, views
-from .models import Project, Turbine, Analysis, Column, Datafile
+from .models import Project, Turbine, Analysis, Column, JsonDataFile
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
 from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
-import jsonpickle
 from windAnalysis.utility import synchroniseDataFiles
 from webinterface.testData import getWindTestData, getLidarTestData, getPowerTestData
 import json
-from .datamodel import TestData
 from .utils import PythonObjectEncoder, as_python_object
-
 
 def index(request):
     return render(request, 'base.html')
@@ -78,11 +75,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
             mastFile.clean()
             files.append(mastFile)
 
-            project.windDataFile = jsonDataFile
+            jFile, created = JsonDataFile.objects.get_or_create(name="mastFile", jsonData=jsonDataFile, projectID=project.id)
+            project.windDataFile = jFile
             project.save()
 
         if 'lidarFile' in request.data:
             project.lidarFile = request.data['lidarFile']
+            project.save()
+
             lidarFile = project.addDatafile('lidar.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
                                 FileType.LIDAR, columnSeparator='\t')
             data = getLidarTestData()
@@ -94,14 +94,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
             lidarFile.clean()
             files.append(lidarFile)
 
-            project.lidarDataFile = jsonDataFile
+            jFile, created = JsonDataFile.objects.get_or_create(name="lidarFile", jsonData=jsonDataFile, projectID=project.id)
+            project.lidarDataFile = jFile
             project.save()
 
         if 'powerFile' in request.data:
             project.powerFile = request.data['powerFile']
+            project.save()
             powerFile = project.addDatafile('power.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
                             FileType.POWER, columnSeparator='\t')
-
             data = getPowerTestData()
             addDataToFile(powerFile, data, project)
             jsonDataFile = json.dumps(powerFile, cls=PythonObjectEncoder)
@@ -110,7 +111,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             powerFile.clean()
             files.append(powerFile)
 
-            project.powerDataFile = jsonDataFile
+            jFile, created = JsonDataFile.objects.get_or_create(name="powerFile", jsonData=jsonDataFile, projectID=project.id)
+            project.powerDataFile = jFile
             project.save()
 
         project.save()
@@ -121,7 +123,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             combinedFile.saveToFile()
 
             jsonCombined = json.dumps(combinedFile, cls=PythonObjectEncoder)
-            project.combinedDataFile = jsonCombined
+            jFile, created = JsonDataFile.objects.get_or_create(name="combinedFile", jsonData=jsonCombined, projectID=project.id)
+            project.combinedDataFile = jFile
 
         project.save()
         return Response()
@@ -147,16 +150,20 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 files = []
 
                 if project.windDataFile:
-                    files.append(json.loads(project.windDataFile, object_hook=as_python_object))
+                    dataFile = JsonDataFile.objects.get(id=project.windDataFile.id)
+                    files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
                 if project.powerDataFile:
-                    files.append(json.loads(project.powerDataFile, object_hook=as_python_object))
+                    dataFile = JsonDataFile.objects.get(id=project.powerDataFile.id)
+                    files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
                 if project.lidarDataFile:
-                    files.append(json.loads(project.lidarDataFile, object_hook=as_python_object))
+                    dataFile = JsonDataFile.objects.get(id=project.lidarDataFile.id)
+                    files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
                 if project.combinedDataFile:
-                    files.append(json.loads(project.combinedDataFile, object_hook=as_python_object))
+                     dataFile = JsonDataFile.objects.get(id=project.combinedDataFile.id)
+                     files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
 
                 dummy(project, files)

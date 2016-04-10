@@ -122,6 +122,15 @@ class Turbine(models.Model):
         print(self.stripes)
 
 
+class JsonDataFile(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    jsonData = JSONField(blank=True, null=True)
+
+    projectID = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 class Project(models.Model):
     title = models.CharField(max_length=200, unique=True, blank=False)
 
@@ -132,10 +141,15 @@ class Project(models.Model):
 
     siteCalibrationFile = models.FileField(upload_to=ProjectManager.getSiteCalibrationFilePath, null=True, blank=True)
 
-    windDataFile = JSONField(null=True, blank=True)
-    powerDataFile = JSONField(null=True, blank=True)
-    lidarDataFile = JSONField(null=True, blank=True)
-    combinedDataFile = JSONField(null=True, blank=True)
+    #windDataFile = JSONField(null=True, blank=True)
+    # powerDataFile = JSONField(null=True, blank=True)
+    # lidarDataFile = JSONField(null=True, blank=True)
+    # combinedDataFile = JSONField(null=True, blank=True)
+
+    windDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="windDataFile")
+    powerDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="powerDataFile")
+    lidarDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="lidarDataFile")
+    combinedDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="combinedDataFile")
 
     mastFile = models.FileField(upload_to=ProjectManager.getMastFilePath, blank=True, null=True)
     lidarFile = models.FileField(upload_to=ProjectManager.getLidarFilePath, blank=True, null=True)
@@ -190,6 +204,8 @@ class Project(models.Model):
                                 referenceAirDensity=airDensity)
 
         return powerCurve.validated().padded()
+
+
 
 
 class Analysis(models.Model):
