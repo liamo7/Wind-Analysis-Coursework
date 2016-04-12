@@ -391,14 +391,6 @@ class Datafile(object):
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:
             if columnArguments != ():
-                print(newColumn)
-                print(functionToApply)
-                print(columnArguments)
-                print(kwargs)
-                for c in columnArguments:
-                    print(columnArguments)
-                    print(self.data[c])
-
                 args = [self.data[c] for c in columnArguments]
             else:
                 args = []

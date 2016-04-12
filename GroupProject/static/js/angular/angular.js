@@ -15105,7 +15105,7 @@ function $ParseProvider() {
       return newValue === oldValueOfValue || (newValue !== newValue && oldValueOfValue !== oldValueOfValue);
     }
 
-    function inputsWatchDelegate(scope, listener, objectEquality, parsedExpression, prettyPrintExpression) {
+    function inputsWatchDelegate(scope, listener, objectEquality, parsedExpression, prettyprintExpression) {
       var inputExpressions = parsedExpression.inputs;
       var lastResult;
 
@@ -15119,7 +15119,7 @@ function $ParseProvider() {
             oldInputValueOf = newInputValue && getValueOf(newInputValue);
           }
           return lastResult;
-        }, listener, objectEquality, prettyPrintExpression);
+        }, listener, objectEquality, prettyprintExpression);
       }
 
       var oldInputValueOfValues = [];
@@ -15145,7 +15145,7 @@ function $ParseProvider() {
         }
 
         return lastResult;
-      }, listener, objectEquality, prettyPrintExpression);
+      }, listener, objectEquality, prettyprintExpression);
     }
 
     function oneTimeWatchDelegate(scope, listener, objectEquality, parsedExpression) {
@@ -16244,7 +16244,7 @@ function $RootScopeProvider() {
        *     comparing for reference equality.
        * @returns {function()} Returns a deregistration function for this listener.
        */
-      $watch: function(watchExp, listener, objectEquality, prettyPrintExpression) {
+      $watch: function(watchExp, listener, objectEquality, prettyprintExpression) {
         var get = $parse(watchExp);
 
         if (get.$$watchDelegate) {
@@ -16256,7 +16256,7 @@ function $RootScopeProvider() {
               fn: listener,
               last: initWatchVal,
               get: get,
-              exp: prettyPrintExpression || watchExp,
+              exp: prettyprintExpression || watchExp,
               eq: !!objectEquality
             };
 

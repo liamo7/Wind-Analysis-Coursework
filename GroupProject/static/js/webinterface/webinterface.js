@@ -184,6 +184,9 @@ app.controller('mainController', function($location, $http, $scope, projectServi
             return $http.post('/api/v1/analyses/', {
                 title: title,
                 project: project
+            }).then(function(response){
+                $scope.loadAnalysis(response.config.data);
+                $location.path('/project/' + project.title + '/' + title);
             });
         }
     };
@@ -239,6 +242,11 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         var file = input.files[0];
         $scope.fileData = {};
 
+        $scope.fileData['colSets'] = {
+                'label': 'anemometers',
+                'columnSet': ['Mast - 80m Wind Speed Mean', 'Mast - 64m Wind Speed Mean', 'Mast - 35.0m Wind Speed Mean']
+            }
+
         var reader = new FileReader();
         reader.onload = function (e) {
             var fileContents = e.target.result;
@@ -261,8 +269,10 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
                     for(var key in $scope.fileData) {
                         //starts at zero - we need to add 1 for the enums
-                        $scope.fileData[key].columnType = $scope.columnTypes.indexOf($scope.fileData[key].columnType) + 1;
-                        $scope.fileData[key].valueType = $scope.valueTypes.indexOf($scope.fileData[key].valueType) + 1;
+                        if(key != "colSets") {
+                            $scope.fileData[key].columnType = $scope.columnTypes.indexOf($scope.fileData[key].columnType) + 1;
+                            $scope.fileData[key].valueType = $scope.valueTypes.indexOf($scope.fileData[key].valueType) + 1;
+                        }
 
                         if($scope.fileData[key].toUse == false)
                             delete $scope.fileData[key]

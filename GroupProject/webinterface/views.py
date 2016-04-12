@@ -104,10 +104,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
             addDataToFile(mastFile, data, project)
 
-            # Hack until add column set to template
-            mastFile.addColumnSet('anemometers', ['Mast - 80m Wind Speed Mean', 'Mast - 64m Wind Speed Mean',
-                                                           'Mast - 35.0m Wind Speed Mean'])
-
             jsonDataFile = json.dumps(mastFile, cls=PythonObjectEncoder)
 
             mastFile.loadFromFile()
@@ -245,9 +241,12 @@ class ValueTypeViewSet(views.APIView):
 def addDataToFile(dataFile, data, project):
 
     for key, val in data.items():
-        if 'columnSet' in val:
+        if key == 'colSets':
+            print('colsets')
             dataFile.addColumnSet(**val)
         else:
+            print(key)
+            print(val)
             dataFile.addColumn(project=project, **val)
 
 
