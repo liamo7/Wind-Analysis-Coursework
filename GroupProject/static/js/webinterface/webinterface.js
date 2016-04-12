@@ -143,8 +143,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.turbineList = response.data;
     });
 
-
-
     $scope.loadAnalysis = function(analysis) {
         setCurrentAnalysis(analysis);
     }
@@ -199,63 +197,98 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
     function init() {
         console.log("init project controller");
-        $scope.columnNames = ['col1', 'col2', 'col3'];
-        $scope.fileData = {};
+        $scope.columnNames = null;
         $scope.fileType = null;
+
+        $scope.mastFileDict = {};
+        $scope.lidarFileDict = {};
+        $scope.powerFileDict = {};
+
     } init();
 
     $scope.uploadFiles = function(mastFile, lidarFile, powerFile) {
         Upload.upload({
                 url: '/api/v1/projects/' + $scope.currentProject.title + '/',
-                data: {headerData: $scope.fileData, powerFile: powerFile, mastFile: mastFile, lidarFile: lidarFile, projectTitle: $scope.currentProject.title},
+                data: {
+                    powerFileDict: $scope.powerFileDict,
+                    powerFile: powerFile,
+                    mastFile: mastFile,
+                    mastFileDict: $scope.mastFileDict,
+                    lidarFile: lidarFile,
+                    lidarFileDict: $scope.lidarFileDict,
+                    projectTitle: $scope.currentProject.title,
+                },
                 method: 'put'
             }).then(function (resp) {
                 console.log('Success uploaded. Response: ' + resp.data);
         });
-    }
+    };
 
     $scope.fileNameChanged = function (input) {
         $scope.fileType = input.id;
-        delete $scope.fileData[$scope.fileType];
-
         var file = input.files[0];
-
-        $scope.columnNames = [];
+        $scope.fileData = {};
 
         var reader = new FileReader();
         reader.onload = function (e) {
             var fileContents = e.target.result;
             var columnHeaders = fileContents.split('\n')[0].split('\t');
-            for(var i = 0; i < columnHeaders.length; i++){
-                columnHeaders[i] = columnHeaders[i];
+            columnHeaders.splice(0, 1);
+            $scope.columnNames = columnHeaders;
+
+            for(var x=0; x<$scope.columnNames.length; x++) {
+                $scope.fileData['col' + x] = {};
+                $scope.fileData['col' + x].name = $scope.columnNames[x];
+                $scope.fileData['col' + x].positionInFile = x + 1;
             }
 
-            $scope.columnNames = $scope.columnNames.concat(columnHeaders);
             ngDialog.openConfirm({
                     template: '/static/templates/project/selectHeaders.html',
                     scope: $scope, //Pass the scope object if you need to access in the template
                 }).then(
                 function (value) {
-                    //save the contact form
-                    for(var key in $scope.fileData[$scope.fileType]){
-                        if($scope.fileData[$scope.fileType][key].toUse === false) {
-                            delete $scope.fileData[$scope.fileType][key];
-                        }else{
-                            $scope.fileData[$scope.fileType][key].colType = $scope.columnTypes.indexOf($scope.fileData[$scope.fileType][key].colType);
-                            $scope.fileData[$scope.fileType][key].valType = $scope.valueTypes.indexOf($scope.fileData[$scope.fileType][key].valType);
-                        }
+
+                    for(var key in $scope.fileData) {
+                        //starts at zero - we need to add 1 for the enums
+                        $scope.fileData[key].columnType = $scope.columnTypes.indexOf($scope.fileData[key].columnType) + 1;
+                        $scope.fileData[key].valueType = $scope.valueTypes.indexOf($scope.fileData[key].valueType) + 1;
+
+                        if($scope.fileData[key].toUse == false)
+                            delete $scope.fileData[key]
                     }
-                    alert(JSON.stringify($scope.fileData));
-                    $scope.fileType = null;
+
+
+                    switch ($scope.fileType) {
+                        case 'mastFile':
+                            $scope.mastFileDict = JSON.stringify($scope.fileData);
+                            alert($scope.mastFileDict);
+                            console.log($scope.mastFileDict);
+                            break;
+
+                        case 'lidarFile':
+                            $scope.lidarFileDict = JSON.stringify($scope.fileData);
+                            alert($scope.lidarFileDict);
+                            console.log($scope.lidarFileDict);
+                            break;
+
+                        case 'powerFile':
+                            $scope.powerFileDict = JSON.stringify($scope.fileData);
+                            alert($scope.powerFileDict);
+                            console.log($scope.powerFileDict);
+                            break;
+                    }
+
                 },
+
                 function (value) {
-                    //Cancel or do nothing
-                    delete $scope.fileData[$scope.fileType];
-                    $scope.fileType = null;
+
+                //Cancel
                 });
-            }
-            reader.readAsText(file);
-    };
+            };
+
+        reader.readAsText(file);
+
+        };
 
     projectService.getColumnTypes().then(function(response) {
         $scope.columnTypes = response.data;
@@ -299,7 +332,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
         ngDialog.openConfirm({
             template: '/static/templates/analysis/createProcess.html',
-            scope: $scope, //Pass the scope object if you need to access in the template
+            scope: $scope
         }).then(
             function (value) {
                 //save the contact form
@@ -318,32 +351,3 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
 
 
-
-
-
-/*
-    data = {'col':
-        {
-            'header': 'Mast - 82m Wind Direction Mean',
-            'colType': 'WIND_DIRECTION',
-            'valType': 'MEAN',
-            'measurementHeight': 8,
-            'instrumentCalibrationSlope': 0.04581,
-            'instrumentCalibrationOffset': 0.2638,
-            'dataLoggerCalibrationSlope': 0.0462,
-            'dataLoggerCalibrationOffset': 0.04321
-        },
-
-        'col': {
-            'header': '80m Wind Speed Mean',
-            'colType': 'WIND_SPEED',
-            'valType': 'MEAN',
-            'measurementHeight': 80,
-            'instrumentCalibrationSlope': 0.04581,
-            'instrumentCalibrationOffset': 0.2638,
-            'dataLoggerCalibrationSlope': 0.0462,
-            'dataLoggerCalibrationOffset': 0.04321
-        }
-    }
-
- */

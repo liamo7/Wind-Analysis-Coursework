@@ -8,17 +8,17 @@
             <div class="well">
 
                 <input type="checkbox" ng-true-value="" ng-false-value="false"
-                       ng-model="fileData[fileType][colName].toUse">
+                       ng-model="fileData['col' + $index].toUse">
                 <label>{[{ colName }]}</label>
 
-                <select ng-model="fileData[fileType][colName].colType">
+                <select ng-model="fileData['col' + $index].columnType">
                     <option value="" disabled selected>Column Type</option>
                     <option ng-repeat="col in columnTypes" value="{[{ col }]}">{[{col}]}</option>
                 </select>
 
-                <select ng-model="fileData[fileType][colName].valType">
+                <select ng-model="fileData['col' + $index].valueType">
                     <option value="" disabled selected>Value Type</option>
-                    <option ng-repeat="col in valueTypes" value="{[{ col }]}">{[{col}]}</option>
+                    <option ng-repeat="col in valueTypes" value="{[{ col}]}">{[{col}]}</option>
                 </select>
 
                 <div class="row">
@@ -26,25 +26,25 @@
                         <label>Measurement Height</label>
                         <br>
                         <input placeholder="Measurement Height" type="number" name="measurementHeight"
-                               ng-model="fileData[fileType][colName].measurementHeight">
+                               ng-model="fileData['col' + $index].measurementHeight">
                     </div>
                     <div class="col-md-4">
                         <label>Instrument Calibration</label>
                         <br>
                         <input placeholder="Slope" type="number" name="instrumentCalibrationSlope"
-                               ng-model="fileData[fileType][colName].instrumentCalibrationSlope">
+                               ng-model="fileData['col' + $index].instrumentCalibrationSlope">
                         <br>
                         <input placeholder="Offset" type="number" name="instrumentCalibrationOffset"
-                               ng-model="fileData[fileType][colName].instrumentCalibrationOffset">
+                               ng-model="fileData['col' + $index].instrumentCalibrationOffset">
                     </div>
                     <div class="col-md-4">
                         <label>Data Logger Calibration</label>
                         <br>
                         <input placeholder="Slope" type="number" name="dataLoggerCalibrationSlope"
-                               ng-model="fileData[fileType][colName].dataLoggerCalibrationSlope">
+                               ng-model="fileData['col' + $index].dataLoggerCalibrationSlope">
                         <br>
                         <input placeholder="Offset" type="number" name="dataLoggerCalibrationOffset"
-                               ng-model="fileData[fileType][colName].dataLoggerCalibrationOffset">
+                               ng-model="fileData['col' + $index].dataLoggerCalibrationOffset">
                     </div>
                 </div>
             </div>

@@ -49,8 +49,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
                 project.save()
-
-                print("Project setup complete")
                 return Response(data={"success": "Project Created."})
 
         print(serializer.errors)
@@ -64,9 +62,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if 'mastFile' in request.data:
             project.mastFile = request.data['mastFile']
-            mastFile = project.addDatafile('mast.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/', FileType.METEO, columnSeparator='\t')
+            mastFile = project.addDatafile('mast.txt', project.directory + '/media/' + project.title + '/rawDataFiles/', FileType.METEO, columnSeparator='\t')
             project.save()
-            data = getWindTestData()
+
+            data = json.loads(request.data['mastFileDict'])
+            #data = getWindTestData()
 
             addDataToFile(mastFile, data, project)
             jsonDataFile = json.dumps(mastFile, cls=PythonObjectEncoder)
@@ -83,9 +83,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.lidarFile = request.data['lidarFile']
             project.save()
 
-            lidarFile = project.addDatafile('lidar.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
+            lidarFile = project.addDatafile('lidar.txt', project.directory + '/media/' + project.title + '/rawDataFiles/',
                                 FileType.LIDAR, columnSeparator='\t')
-            data = getLidarTestData()
+
+            data = json.loads(request.data['lidarFileDict'])
 
             addDataToFile(lidarFile, data, project)
             jsonDataFile = json.dumps(lidarFile, cls=PythonObjectEncoder)
@@ -101,9 +102,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if 'powerFile' in request.data:
             project.powerFile = request.data['powerFile']
             project.save()
-            powerFile = project.addDatafile('power.txt', project.directory + '\\media/' + project.title + '\\rawDataFiles/',
+            powerFile = project.addDatafile('power.txt', project.directory + '/media/' + project.title + '/rawDataFiles/',
                             FileType.POWER, columnSeparator='\t')
-            data = getPowerTestData()
+
+            #data = getPowerTestData()
+            data = json.loads(request.data['powerFileDict'])
             addDataToFile(powerFile, data, project)
             jsonDataFile = json.dumps(powerFile, cls=PythonObjectEncoder)
 
@@ -138,13 +141,10 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         serializer = self.serializer_class(data=request.data)
-        print(serializer)
-
         project = Project.objects.get(title=request.data['project']['title'])
 
         if project:
             if serializer.is_valid():
-                print(serializer.validated_data)
                 Analysis.objects.create(project=project, **serializer.validated_data)
 
                 files = []

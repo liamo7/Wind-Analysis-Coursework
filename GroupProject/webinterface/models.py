@@ -16,22 +16,22 @@ from GroupProject.settings import MEDIA_ROOT
 class ProjectManager(models.Manager):
 
     def getLidarFilePath(self, fileName):
-        return '{0}\\rawDataFiles\lidar.txt'.format(self.title)
+        return '{0}/rawDataFiles/lidar.txt'.format(self.title)
 
     def getMastFilePath(self, fileName):
-        return '{0}\\rawDataFiles\mast.txt'.format(self.title)
+        return '{0}/rawDataFiles/mast.txt'.format(self.title)
 
     def getPowerFilePath(self, fileName):
-        return '{0}\\rawDataFiles\power.txt'.format(self.title)
+        return '{0}/rawDataFiles/power.txt'.format(self.title)
 
     def getSiteCalibrationFilePath(self, fileName):
-        return '{0}\sitecalibration\{1}'.format(self.title, fileName)
+        return '{0}/sitecalibration/{1}'.format(self.title, fileName)
 
     def getSynchronisedFilePath(self):
-        return '{0}\synced\synchronisedData.txt'.format(self.title)
+        return '{0}/synced/synchronisedData.txt'.format(self.title)
 
     def getCombinedFilePath(self):
-        return '{0}\combined\\'
+        return '{0}/combined/'
 
 
 
@@ -159,7 +159,7 @@ class Project(models.Model):
         return self.title
 
     def getCombinedFilePath(self):
-        return MEDIA_ROOT + '\{0}\combined\\'.format(self.title)
+        return MEDIA_ROOT + '/{0}/combined/'.format(self.title)
 
 
     def addDataFileNames(self, list):
@@ -285,8 +285,10 @@ class Datafile(object):
         cols = sorted([0]+[column.positionInFile for column in self.columns])
         testvar = self.fullyQualifiedPath()
         df = pd.read_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, skiprows=self.rowsToSkip, parse_dates=True, dayfirst=True, usecols=cols, index_col=0, na_values=self.badDataValues)
+        print(df)
         df.columns = [name[0] for name in sorted([[column.name, column.positionInFile] for column in self.columns], key=lambda column: column[1])]
-        self.data = pd.to_numeric(df, errors='coerce')
+        self.data = df.apply(lambda x: pd.to_numeric(x), axis=0)
+        #self.data = pd.to_numeric(df, errors='coerce')
         print("Data loaded: " + self.filename)
 
     def saveToFile(self):
