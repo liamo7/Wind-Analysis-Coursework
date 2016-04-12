@@ -98,7 +98,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
     function init() {
         $scope.currentProject = null;
         $scope.selectedTurbine = null;
-        $scope.sidebarType = null;
+        $scope.sidebarType = 'projects';
         $scope.currentProject = null;
         $scope.currentAnalysis = null;
         $scope.logMessages = null;

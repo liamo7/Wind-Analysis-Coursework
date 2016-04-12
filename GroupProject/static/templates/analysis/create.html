@@ -1,40 +1,44 @@
-<div class="row">
-  <div class="col-md-4 col-md-offset-4">
-    <h1>Analysis Create</h1>
-    <div class="well"  ng-controller='analysisCreationController'>
-      <form role="form" ng-submit="createAnalysis(title, currentProject)">
-        <div class="form-group">
-          <label for="title">Title</label>
-          <input type="text" class="form-control" id="title" ng-model="title"/>
-        </div>
 
-        <label id="inputFile">Input file (synchronized or derived from other analysis data)</label>
-        <br>
-        <select>
+<h1 class="page-header text-center">Create An Analysis</h1>
+<div class="row placeholder">
+    <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;" ng-controller="analysisCreationController">
+            <form role="form" ng-submit="createAnalysis(title, currentProject)">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" class="form-control" id="title" ng-model="title"/>
+                </div>
 
-        </select>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea style="height: 140px;" type="text" class="form-control" id="description" ng-model="description"/>
+                </div>
 
-        <h1>Processing</h1>
-        <label id="addProcess">Add process</label>
-        <select ng-model="selectedProcess">
-          <option>Air Density</option>
-          <option>Turbulence Intensity</option>
-          <option>Wind Shear Exponent Polyfit</option>
-          <option>Two Height Wind Shear Exponent</option>
-          <option>wind_direction_bin</option>
-          <option>siteCorrectedWindSpeed</option>
-          <option>normalisedWindSpeed</option>
-          <option>windSpeedBin</option>
-          <option>hubHeightSpecificEnergyProduction</option>
-          <option>powerDeviation</option>
-        </select>
-        <a ng-click="showPrompt($event);">Add Process</a>
+                <div class="form-group">
+                    <label>Input Data File</label>
+                    <select ng-model="selectedDataFile" style="width: 100%;">
+                        <option value="" disabled selected>Select A Data File</option>
+                        <option ng-repeat="file in ['Syncronised File', 'Derived File']" value="{[{ file }]}">{[{file}]}</option>
+                    </select>
+                </div>
 
-        <div>
-          <dialog></dialog>
-        </div>
+                <div class="form-group">
+                    <label id="addProcess">Add process</label>
+                    <select ng-model="selectedProcess">
+                      <option>Air Density</option>
+                      <option>Turbulence Intensity</option>
+                      <option>Wind Shear Exponent Polyfit</option>
+                      <option>Two Height Wind Shear Exponent</option>
+                      <option>wind_direction_bin</option>
+                      <option>siteCorrectedWindSpeed</option>
+                      <option>normalisedWindSpeed</option>
+                      <option>windSpeedBin</option>
+                      <option>hubHeightSpecificEnergyProduction</option>
+                      <option>powerDeviation</option>
+                    </select>
+                    <a ng-click="showPrompt($event);">Add Process</a>
+                </div>
 
-        <table border="1">
+                          <table border="1">
           <tr>
             <td ng-repeat="(key, value) in processes">{[{ key }]}</td>
           </tr>
@@ -43,11 +47,10 @@
           </tr>
         </table>
 
-
-        <div class="form-group">
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary center-block">Create Project</button>
+                </div>
+            </form>
     </div>
-  </div>
 </div>
+
