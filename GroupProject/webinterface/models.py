@@ -25,7 +25,7 @@ class ProjectManager(models.Manager):
         return '{0}/rawDataFiles/power.txt'.format(self.title)
 
     def getSiteCalibrationFilePath(self, fileName):
-        return '{0}/sitecalibration/{1}'.format(self.title, fileName)
+        return '{0}/sitecalibration/siteCalibration.txt'.format(self.title)
 
     def getSynchronisedFilePath(self):
         return '{0}/synced/synchronisedData.txt'.format(self.title)
@@ -140,16 +140,17 @@ class Project(models.Model):
     #datafiles = ArrayField(models.CharField(max_length=2000, null=True, blank=True), blank=True, null=True, max_length=2000)
 
     siteCalibrationFile = models.FileField(upload_to=ProjectManager.getSiteCalibrationFilePath, null=True, blank=True)
+    siteCalibrationDict = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="siteCalibrationDict", on_delete=models.CASCADE)
 
     #windDataFile = JSONField(null=True, blank=True)
     # powerDataFile = JSONField(null=True, blank=True)
     # lidarDataFile = JSONField(null=True, blank=True)
     # combinedDataFile = JSONField(null=True, blank=True)
 
-    windDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="windDataFile")
-    powerDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="powerDataFile")
-    lidarDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="lidarDataFile")
-    combinedDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="combinedDataFile")
+    windDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="windDataFile", on_delete=models.CASCADE)
+    powerDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="powerDataFile", on_delete=models.CASCADE)
+    lidarDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="lidarDataFile", on_delete=models.CASCADE)
+    combinedDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="combinedDataFile", on_delete=models.CASCADE)
 
     mastFile = models.FileField(upload_to=ProjectManager.getMastFilePath, blank=True, null=True)
     lidarFile = models.FileField(upload_to=ProjectManager.getLidarFilePath, blank=True, null=True)
@@ -285,7 +286,6 @@ class Datafile(object):
         cols = sorted([0]+[column.positionInFile for column in self.columns])
         testvar = self.fullyQualifiedPath()
         df = pd.read_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, skiprows=self.rowsToSkip, parse_dates=True, dayfirst=True, usecols=cols, index_col=0, na_values=self.badDataValues)
-        print(df)
         df.columns = [name[0] for name in sorted([[column.name, column.positionInFile] for column in self.columns], key=lambda column: column[1])]
         self.data = df.apply(lambda x: pd.to_numeric(x), axis=0)
         #self.data = pd.to_numeric(df, errors='coerce')
@@ -391,6 +391,14 @@ class Datafile(object):
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:
             if columnArguments != ():
+                print(newColumn)
+                print(functionToApply)
+                print(columnArguments)
+                print(kwargs)
+                for c in columnArguments:
+                    print(columnArguments)
+                    print(self.data[c])
+
                 args = [self.data[c] for c in columnArguments]
             else:
                 args = []

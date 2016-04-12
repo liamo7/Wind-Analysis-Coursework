@@ -5,6 +5,10 @@
             <h1>Upload Files</h1>
             <div class="well">
                 <form name="form">
+
+                    <label>Site Calibration</label>
+                    <input type="file" class="form-control" id="siteCalibration" ngf-select ng-model="siteCalibration"/>
+
                     <label>Mast File</label>
                     <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="mastFile" ngf-select ng-model="mastFile"/>
 
@@ -15,7 +19,7 @@
                     <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="powerFile" ngf-select ng-model="powerFile"/>
 
 
-                    <button type="submit" ng-click="uploadFiles(mastFile, lidarFile, powerFile)">Submit</button>
+                    <button type="submit" ng-click="uploadFiles(mastFile, lidarFile, powerFile, siteCalibration)">Submit</button>
                 </form>
 
             </div>

@@ -2,10 +2,8 @@
     <h2>Column Selection</h2>
 
     <div style="max-height:70vh;overflow-y: scroll;">
-        <div ng-repeat="colName in columnNames">
-
-
-            <div class="well">
+        <div class="well">
+            <div ng-repeat="colName in columnNames">
 
                 <input type="checkbox" ng-true-value="" ng-false-value="false"
                        ng-model="fileData['col' + $index].toUse">
@@ -46,10 +44,12 @@
                         <input placeholder="Offset" type="number" name="dataLoggerCalibrationOffset"
                                ng-model="fileData['col' + $index].dataLoggerCalibrationOffset">
                     </div>
+
                 </div>
             </div>
 
         </div>
+
     </div>
 
 

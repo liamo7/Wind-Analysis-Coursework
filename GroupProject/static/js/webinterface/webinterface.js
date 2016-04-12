@@ -83,6 +83,10 @@ app.factory('projectService', function($http, $routeParams) {
 
         getValueTypes: function() {
             return $http.get('/api/v1/valuetypes/');
+        },
+
+        getLogMessages: function() {
+            return $http.get('/api/v1/logcat/')
         }
     };
 
@@ -92,13 +96,17 @@ app.factory('projectService', function($http, $routeParams) {
 app.controller('mainController', function($location, $http, $scope, projectService) {
 
     function init() {
-        console.log("init");
         $scope.currentProject = null;
         $scope.selectedTurbine = null;
         $scope.sidebarType = null;
         $scope.currentProject = null;
         $scope.currentAnalysis = null;
+        $scope.logMessages = null;
         $location.path('/');
+
+        projectService.getLogMessages().then(function (response) {
+        $scope.logMessages = response.data;
+    })
     } init();
 
 
@@ -115,7 +123,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         switch (type) {
             case 'projects':
                 $scope.sidebarType = type;
-                window.alert(type);
                 break;
 
             case 'turbines':
@@ -143,6 +150,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.turbineList = response.data;
     });
 
+
     $scope.loadAnalysis = function(analysis) {
         setCurrentAnalysis(analysis);
     }
@@ -167,7 +175,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
             turbine: JSON.parse(turbine)
         }).then(function (response) {
             $scope.loadProject(response.config.data);
-            $location.path('/project/' + title);
+            $location.path('/project/' + title + '/files/upload');
         });
     };
 
@@ -196,7 +204,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService, Upload) {
 
     function init() {
-        console.log("init project controller");
         $scope.columnNames = null;
         $scope.fileType = null;
 
@@ -204,12 +211,15 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         $scope.lidarFileDict = {};
         $scope.powerFileDict = {};
 
+        $scope.anemometersCols = [];
+
     } init();
 
-    $scope.uploadFiles = function(mastFile, lidarFile, powerFile) {
+    $scope.uploadFiles = function(mastFile, lidarFile, powerFile, siteCalibration) {
         Upload.upload({
                 url: '/api/v1/projects/' + $scope.currentProject.title + '/',
                 data: {
+                    siteCalibrationFile: siteCalibration,
                     powerFileDict: $scope.powerFileDict,
                     powerFile: powerFile,
                     mastFile: mastFile,
@@ -220,7 +230,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
                 },
                 method: 'put'
             }).then(function (resp) {
-                console.log('Success uploaded. Response: ' + resp.data);
+                $location.path('/project/' + title + '/');
         });
     };
 
@@ -233,9 +243,10 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         reader.onload = function (e) {
             var fileContents = e.target.result;
             var columnHeaders = fileContents.split('\n')[0].split('\t');
+            columnHeaders[columnHeaders.length-1] = columnHeaders[columnHeaders.length-1].replace('\r', ' ');
             columnHeaders.splice(0, 1);
             $scope.columnNames = columnHeaders;
-
+            
             for(var x=0; x<$scope.columnNames.length; x++) {
                 $scope.fileData['col' + x] = {};
                 $scope.fileData['col' + x].name = $scope.columnNames[x];
@@ -261,20 +272,14 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
                     switch ($scope.fileType) {
                         case 'mastFile':
                             $scope.mastFileDict = JSON.stringify($scope.fileData);
-                            alert($scope.mastFileDict);
-                            console.log($scope.mastFileDict);
                             break;
 
                         case 'lidarFile':
                             $scope.lidarFileDict = JSON.stringify($scope.fileData);
-                            alert($scope.lidarFileDict);
-                            console.log($scope.lidarFileDict);
                             break;
 
                         case 'powerFile':
                             $scope.powerFileDict = JSON.stringify($scope.fileData);
-                            alert($scope.powerFileDict);
-                            console.log($scope.powerFileDict);
                             break;
                     }
 
@@ -303,7 +308,6 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog) {
 
     function init() {
-        console.log("init analysis controller");
         $scope.selectedProcess = null;
         $scope.processes = {};
         $scope.processParams = ['param1', 'param2', 'param3'];
@@ -315,7 +319,6 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
     init();
 
     $scope.addProcess = function (process) {
-        alert(JSON.stringify(process, null, 4));
         var key = Object.keys(process)[0];
         $scope.processes[key] = process[key];
         $scope.selectedProcess = null;

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework.response import Response
+from django.http import HttpResponse
 from rest_framework import viewsets, views
 from .models import Project, Turbine, Analysis, Column, JsonDataFile
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
@@ -7,11 +8,27 @@ from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
 from windAnalysis.utility import synchroniseDataFiles
 from webinterface.testData import getWindTestData, getLidarTestData, getPowerTestData
+from django.contrib import messages
 import json
+from GroupProject.settings import MEDIA_ROOT
 from .utils import PythonObjectEncoder, as_python_object
-
+import pandas as pd
 def index(request):
     return render(request, 'base.html')
+
+
+def message(request, msg):
+    return HttpResponse({"message": msg})
+
+
+class LogCatViewSet(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        msg = messages.get_messages(request)
+        list = []
+        for m in msg:
+            list.append(m)
+        return JsonResponse(list)
 
 
 class TurbineViewSet(viewsets.ModelViewSet):
@@ -21,15 +38,12 @@ class TurbineViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        print(serializer)
 
         if serializer.is_valid():
-            print(serializer.validated_data)
             turbine = Turbine.objects.create(**serializer.validated_data)
             turbine.addOneMetreHorizontalStripes()
             return Response()
 
-        print(serializer.errors)
         return Response()
 
 
@@ -49,9 +63,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
                 project.save()
+                messages.add_message(request._request, messages.SUCCESS, 'Project has been created.')
                 return Response(data={"success": "Project Created."})
 
-        print(serializer.errors)
         return Response()
 
     def update(self, request, *args, **kwargs):
@@ -60,15 +74,40 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         files = []
 
+        if 'siteCalibrationFile' in request.data:
+            project.siteCalibrationFile = request.data['siteCalibrationFile']
+            project.save()
+            path = MEDIA_ROOT + '/' + project.title + '/sitecalibration/siteCalibration.txt'
+            parse = pd.read_csv(path, sep='\t')
+            valueDict = parse.to_dict()
+
+            degree = list(valueDict['degree'].values())
+            offset = list(valueDict['offset'].values())
+            slope = list(valueDict['slope'].values())
+            siteCalDict = {}
+
+            for ss, elem in enumerate(degree):
+                siteCalDict[str(elem)] = {}
+                siteCalDict[str(elem)]['slope'] = slope[ss]
+                siteCalDict[str(elem)]['offset'] = offset[ss]
+
+            jsonData, created = JsonDataFile.objects.get_or_create(name='siteCalibration', jsonData=json.dumps(siteCalDict, cls=PythonObjectEncoder), projectID=project.id)
+            project.siteCalibrationDict = jsonData
+            project.save()
+
         if 'mastFile' in request.data:
             project.mastFile = request.data['mastFile']
             mastFile = project.addDatafile('mast.txt', project.directory + '/media/' + project.title + '/rawDataFiles/', FileType.METEO, columnSeparator='\t')
             project.save()
 
             data = json.loads(request.data['mastFileDict'])
-            #data = getWindTestData()
 
             addDataToFile(mastFile, data, project)
+
+            # Hack until add column set to template
+            mastFile.addColumnSet('anemometers', ['Mast - 80m Wind Speed Mean', 'Mast - 64m Wind Speed Mean',
+                                                           'Mast - 35.0m Wind Speed Mean'])
+
             jsonDataFile = json.dumps(mastFile, cls=PythonObjectEncoder)
 
             mastFile.loadFromFile()
@@ -105,7 +144,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             powerFile = project.addDatafile('power.txt', project.directory + '/media/' + project.title + '/rawDataFiles/',
                             FileType.POWER, columnSeparator='\t')
 
-            #data = getPowerTestData()
             data = json.loads(request.data['powerFileDict'])
             addDataToFile(powerFile, data, project)
             jsonDataFile = json.dumps(powerFile, cls=PythonObjectEncoder)
@@ -121,7 +159,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project.save()
 
 
-        if files is not None:
+        if files:
             combinedFile = synchroniseDataFiles('dummy_data.txt', project.getCombinedFilePath(), files)
             combinedFile.saveToFile()
 
@@ -169,7 +207,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                 dummy(project, files)
                 return Response()
 
-        print(serializer.errors)
         return Response()
 
     def list(self, request, title=None):
@@ -212,3 +249,25 @@ def addDataToFile(dataFile, data, project):
             dataFile.addColumnSet(**val)
         else:
             dataFile.addColumn(project=project, **val)
+
+
+
+
+
+class JsonResponse(HttpResponse):
+    def init__(self, data):
+        content = json.dumps(data, indent=2, ensure_ascii=False)
+        super(JsonResponse, self).__init__(content=content,mimetype='application/json; charset=utf8')
+
+
+def getLogMessages(request):
+    storage = messages.get_messages(request)
+    data = []
+
+    for message in storage:
+        data.append({
+            'message': message.message,
+            'status': message.tags
+        })
+
+    return JsonResponse(data)
