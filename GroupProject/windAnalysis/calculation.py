@@ -27,7 +27,6 @@ def bin(row, columnToBin, binWidth=1.0, zeroIsBinStart=True, roundBinBoundaryUp=
         correction = binWidth / 2
 
     binValue = int((row[columnToBin] - correction) / binWidth) * binWidth + correction
-
     if not roundBinBoundaryUp and binValue == row[columnToBin]:
         binValue -= binWidth
 

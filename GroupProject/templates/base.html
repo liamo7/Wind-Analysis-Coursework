@@ -1,121 +1,64 @@
 {% load staticfiles %}
 <html ng-app='webinterface'>
-	<head>
-
-        <base href="/">
-        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-        <script src="{% static 'js/jquery-2.2.3.min.js' %}"></script>
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-        <link rel="stylesheet" href="{% static 'css/ngDialog-theme-default.css' %}">
-
-        <script src="{% static 'js/angular/angular.js' %}"></script>
-        <script src="{% static 'js/angular/angular-route.js' %}"></script>
-        <script src="{% static 'js/angular/angular-cookies.js' %}"></script>
-        <script src="{% static 'js/angular/ng-file-upload.min.js' %}"></script>
-        <script src="{% static 'js/angular/ngDialog.js' %}"></script>
-        <script src="{% static 'js/webinterface/webinterface.js' %}"></script>
-	</head>
-	
-	<body ng-controller='mainController'>
-
-        <nav class="navbar navbar-inverse navbar-fixed-top">
-          <div class="container-fluid">
+   <head>
+      <base href="/">
+      <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+      <script src="{% static 'js/jquery-2.2.3.min.js' %}"></script>
+      <link rel="stylesheet" href="{% static 'css/style.css' %}">
+      <link rel="stylesheet" href="{% static 'css/ngDialog-theme-default.css' %}">
+      <script src="{% static 'js/angular/angular.js' %}"></script>
+      <script src="{% static 'js/angular/angular-route.js' %}"></script>
+      <script src="{% static 'js/angular/angular-cookies.js' %}"></script>
+      <script src="{% static 'js/angular/ng-file-upload.min.js' %}"></script>
+      <script src="{% static 'js/angular/ngDialog.js' %}"></script>
+      <script src="{% static 'js/webinterface/webinterface.js' %}"></script>
+   </head>
+   <body ng-controller='mainController'>
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+         <div class="container-fluid">
             <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="#">Turbine Data Processor</a>
+               <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+               <span class="sr-only">Toggle navigation</span>
+               <span class="icon-bar"></span>
+               <span class="icon-bar"></span>
+               <span class="icon-bar"></span>
+               </button>
+               <a class="navbar-brand" href="#">Turbine Data Processor</a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
-              <ul class="nav navbar-nav navbar-right" ng-switch on="sidebarType">
-                  <li><a href="/project/create">Create Project</a></li>
-                  <li><a href="/turbine/create">Create Turbines</a></li>
-                  <li ng-if="currentProject != null"><a href="/project/analysis/analysis/create">Create Analysis</a></li>
-                  <li ng-click="sidebarType = 'turbines'"><a href="">List Turbines</a></li>
-                  <li ng-if="currentAnalysis != null" ng-click="closeAnalysis()"><a href="">Close Analysis</a></li>
-                  <li ng-if="currentProject != null" ng-click="closeProject()"><a href="">Close Project</a></li>
+               <ul class="nav navbar-nav navbar-right" ng-switch on="sidebarType">
+                  <li><a ng-click="sidebarType = 'projects'" href="/project/create">Create Project</a></li>
+                  <li><a ng-click="sidebarType = 'turbines'" href="/turbine/create">Create Turbine</a></li>
+                  <li ng-if="currentProject != null"><a ng-click="sidebarType = 'projectOpened'" href="/project/analysis/analysis/create">Create Analysis</a></li>
                   <li ng-if="currentProject != null"><a href="/project/{[{currentProject.title}]}/files/upload">Upload Files</a></li>
-              </ul>
+                  <li ng-if="currentAnalysis != null" ng-click="closeAnalysis();"><a href="">Close Analysis</a></li>
+                  <li ng-if="currentProject != null" ng-click="closeProject();"><a href="">Close Project</a></li>
+               </ul>
             </div>
-          </div>
-        </nav>
-
-        <div class="container-fluid">
-          <div class="row">
+         </div>
+      </nav>
+      <div class="container-fluid">
+         <div class="row">
             <div class="col-sm-3 col-md-2 sidebar" ng-switch on="sidebarType">
-              <ul class="nav nav-sidebar">
-                <li class="active"><a href="#" ng-switch-when="projects" class="text-center">Project List</a></li>
-                <li class="active"><a href="#" ng-switch-when="turbines" class="text-center">Turbine List</a></li>
-                <li class="active"><a href="#" ng-switch-when="projectOpened" class="text-center">{[{ currentProject.title }]}</a></li>
-              </ul>
-
-                <ul class="nav nav-sidebar" ng-switch-when="projects">
-                    <li ng-repeat="project in projectList"><a ng-click="loadProject(project)" href="/project/{[{project.title}]}">{[{project.title}]}</a></li>
-                </ul>
-
-                <ul class="nav nav-sidebar" ng-switch-when="turbines">
-                    <li ng-repeat="turbine in turbineList"><a href="/">{[{turbine.name}]}</a></li>
-                </ul>
-
-                <ul class="nav nav-sidebar" ng-switch-when="projectOpened">
-                    <li ng-repeat="analysis in analysesList"><a ng-click="loadAnalysis(analysis)" href="/project/{[{ currentProject.title }]}/{[{ analysis.title }]}">{[{analysis.title}]}</a></li>
-              </ul>
+               <ul class="nav nav-sidebar">
+                  <li class="active"><a href="#" ng-switch-when="projects" class="text-center">Project List</a></li>
+                  <li class="active"><a href="#" ng-switch-when="turbines" class="text-center">Turbine List</a></li>
+                  <li class="active"><a href="#" ng-switch-when="projectOpened" class="text-center">{[{ currentProject.title }]}</a></li>
+                  <li class="active"><a href="#" ng-switch-when="analysisOpened" class="text-center">{[{ currentAnalysis.title }]}</a></li>
+               </ul>
+               <ul class="nav nav-sidebar" ng-switch-when="projects">
+                  <li ng-repeat="project in projectList"><a ng-click="loadProject(project)" href="/project/{[{project.title}]}">{[{project.title}]}</a></li>
+               </ul>
+               <ul class="nav nav-sidebar" ng-switch-when="turbines">
+                  <li ng-repeat="turbine in turbineList"><a href="/">{[{turbine.name}]}</a></li>
+               </ul>
+               <ul class="nav nav-sidebar" ng-switch-when="projectOpened">
+                  <li ng-repeat="analysis in analysesList"><a ng-click="loadAnalysis(analysis)" href="/project/{[{ currentProject.title }]}/{[{ analysis.title }]}">{[{analysis.title}]}</a></li>
+               </ul>
             </div>
-          </div>
-        </div>
-
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ng-view>
-
-        </div>
-
-
-{#        <div id="header">#}
-{##}
-{#            <div class="logo">#}
-{#                <a href="/">Turbine Processor</a>#}
-{#            </div>#}
-{##}
-{#            <ul id="toolbar-items" ng-switch on="sidebarType">#}
-{#                <li><a href="/project/create">Create Project</a></li>#}
-{#                <li><a href="/turbine/create">Create Turbines</a></li>#}
-{#                <li ng-if="currentProject != null"><a href="/project/analysis/analysis/create">Create Analysis</a></li>#}
-{#                <li ng-click="sidebarType = 'turbines'"><a href="">List Turbines</a></li>#}
-{#                <li ng-if="currentAnalysis != null" ng-click="closeAnalysis()"><a href="">Close Analysis</a></li>#}
-{#                <li ng-if="currentProject != null" ng-click="closeProject()"><a href="">Close Project</a></li>#}
-{#                <li ng-if="currentProject != null"><a href="/project/{[{currentProject.title}]}/files/upload">Upload Files</a></li>#}
-{#            </ul>#}
-{##}
-{#        </div>#}
-{##}
-{#        <div id="wrapper-container">#}
-{#            <div class="sidebar" ng-switch on="sidebarType">#}
-{##}
-{#                <div id="sidebar-title-wrapper">#}
-{#                    <h3 ng-switch-when="projects">Project List</h3>#}
-{#                    <h3 ng-switch-when="turbines">Turbine List</h3>#}
-{#                    <h3 ng-switch-when="projectOpened">{[{ currentProject.title }]}</h3>#}
-{#                </div>#}
-{##}
-{#                <ul class="navbar" ng-switch-default="projects">#}
-{#                    <li ng-repeat="project in projectList"><a ng-click="loadProject(project)" href="/project/{[{project.title}]}">{[{project.title}]}</a></li>#}
-{#                </ul>#}
-{##}
-{#                <ul class="navbar" ng-switch-when="turbines">#}
-{#                    <li ng-repeat="turbine in turbineList"><a href="/">{[{turbine.name}]}</a></li>#}
-{#                </ul>#}
-{##}
-{#                <ul class="navbar" ng-switch-when="projectOpened">#}
-{#                    <li ng-repeat="analysis in analysesList"><a ng-click="loadAnalysis(analysis)" href="/project/{[{ currentProject.title }]}/{[{ analysis.title }]}">{[{analysis.title}]}</a></li>#}
-{#                </ul>#}
-{##}
-{#            </div>#}
-{##}
-{#            <div class="container content-wrapper" ng-view>#}
-{##}
-{#            </div>#}
-{#        </div>#}
-	</body>
-</html> 
+         </div>
+      </div>
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ng-view>
+      </div>
+   </body>
+</html>

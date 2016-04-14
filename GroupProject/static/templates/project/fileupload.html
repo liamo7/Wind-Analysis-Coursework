@@ -1,27 +1,29 @@
 <h1 class="page-header text-center">Upload Data Files</h1>
 <div class="row placeholder" ng-controller="projectCreationController">
-    <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;">
-        <form name="form">
-            <div class="form-group">
-                <label>Site Calibration</label>
-                <input type="file" class="form-control" id="siteCalibration" ngf-select ng-model="siteCalibration"/>
-            </div>
-            <div class="form-group">
-                <label>Mast File</label>
-                <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="mastFile" ngf-select ng-model="mastFile"/>
-            </div>
-            <div class="form-group">
-                <label>Lidar File</label>
-                <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="lidarFile" ngf-select ng-model="lidarFile"/>
-            </div>
-            <div class="form-group">
-                <label>Power File</label>
-                <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="powerFile" ngf-select ng-model="powerFile"/>
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary center-block" ng-click="uploadFiles(mastFile, lidarFile, powerFile, siteCalibration)">Submit</button>
-            </div>
-        </form>
-    </div>
+   <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;">
+      <form name="form">
+         <div class="form-group">
+            <label>Site Calibration</label>
+            <input type="file" class="form-control" id="siteCalibration" ngf-select ng-model="siteCalibration" ng-submit=""/>
+         </div>
+         <div class="form-group">
+            <label>Mast File</label>
+            <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="mastFile" ngf-select ng-model="mastFile"/>
+         </div>
+         <div class="form-group">
+            <label>Lidar File</label>
+            <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="lidarFile" ngf-select ng-model="lidarFile"/>
+         </div>
+         <div class="form-group">
+            <label>Power File</label>
+            <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" id="powerFile" ngf-select ng-model="powerFile"/>
+         </div>
+          <div class="progress" style="">
+              <div class="progress-bar" role="progressbar" ng-style="{ 'width': progressPercentage + '%' }"></div>
+          </div>
+         <div class="form-group">
+            <button type="submit" class="btn btn-primary center-block" ng-click="uploadFiles(mastFile, lidarFile, powerFile, siteCalibration)">Submit</button>
+         </div>
+      </form>
+   </div>
 </div>

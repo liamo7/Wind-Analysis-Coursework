@@ -14,6 +14,7 @@ def dummy(project, files):
     # this could be combined file, raw data files ?
     #
 
+    #-------Processing stage analysis---------------------#
     siteCalibrationFactors = {190: {'slope': 1.0152, 'offset': 0},
                               200: {'slope': 1.0135, 'offset': 0},
                               210: {'slope': 0.9957, 'offset': 0},
@@ -23,7 +24,7 @@ def dummy(project, files):
 
     combinedFile.applyInstrumentCalibrations(removeOriginalCalibration=True)
 
-    combinedFile.addDerivedColumn('airDensity', calculation.airDensity, columnArguments=('Pressure (mBar)', 'Temperature (C) ', 'Relative humidity (%)'), columnType=ColumnType.AIR_DENSITY, project=project)
+    combinedFile.addDerivedColumn('airDensity', calculation.airDensity, columnArguments=('Pressure (mBar)', 'Temperature (C)', 'Relative humidity (%)'), columnType=ColumnType.AIR_DENSITY, project=project)
     combinedFile.addDerivedColumn('turbulenceIntensity',                  calculation.turbulenceIntensity, columnArguments=('Mast - 80m Wind Speed Mean', 'Mast - 80m Wind Speed Std Dev'),columnType = ColumnType.TURBULENCE_INTENSITY, project=project)
     #combinedFile.addDerivedColumn('windShearExponentPolyfit',            calculation.windShearExponentPolyfit, kwargs= {'columnSet': combinedFile.getColumnSet('anemometers')},columnType=ColumnType.WIND_SHEAR_EXPONENT, project=project)
     combinedFile.addDerivedColumn('twoHeightWindShearExponent',             calculation.windShearExponentTwoHeights, columnArguments=("Mast - 64m Wind Speed Mean", "Mast - 80m Wind Speed Mean"), kwargs= {'lowerHeight': 64, 'upperHeight': 80}, columnType=ColumnType.WIND_SHEAR_EXPONENT, project=project)
@@ -33,7 +34,7 @@ def dummy(project, files):
     combinedFile.addDerivedColumn('windSpeedBin',                           calculation.bin, columnArguments=('normalisedWindSpeed',), kwargs={'binWidth': 0.5, 'zeroIsBinStart': False}, project=project)
     combinedFile.addDerivedColumn('hubHeightSpecificEnergyProduction',      calculation.specificEnergyProduction, kwargs=({'windSpeedColumn': 'normalisedWindSpeed', 'powerCurve': project.turbine.warrantedPowerCurve()}), project=project)
     combinedFile.addDerivedColumn('powerDeviation', calculation.powerDeviation,
-                                       columnArguments=('Power mean (kW) ', 'normalisedWindSpeed'),
+                                       columnArguments=('Power mean (kW)', 'normalisedWindSpeed'),
                                        kwargs={'powerCurve': project.turbine.warrantedPowerCurve()}, project=project)
 
     combinedFile.selectData()
@@ -41,10 +42,10 @@ def dummy(project, files):
 
 
     print("Derived file created")
-
+    # -------PostProcessing stage analysis---------------------#
     datafile = combinedFile
 
-    measuredPowerCurve = project.makeMeasuredPowerCurve(datafile.data,'normalisedWindSpeed','Power mean (kW) ','windSpeedBin')
+    measuredPowerCurve = project.makeMeasuredPowerCurve(datafile.data,'normalisedWindSpeed','Power mean (kW)','windSpeedBin')
     measuredPowerCurve.calculatePowerCoefficients(project.turbine.radius())
 
     meanWindSpeed = 7.5
@@ -56,7 +57,7 @@ def dummy(project, files):
 
     fg, ax = plt.subplots()
     plt.title('Power curve scatter')
-    plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW) ', ax)
+    plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
 
     mpld3.save_html(fg, 'templates/project/test.html')
 

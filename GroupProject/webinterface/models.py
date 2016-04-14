@@ -33,8 +33,6 @@ class ProjectManager(models.Manager):
     def getCombinedFilePath(self):
         return '{0}/combined/'
 
-
-
 class Turbine(models.Model):
     name = models.CharField(max_length=300, unique=True, blank=False)
     manufacturer = models.CharField(max_length=300, blank=True, null=True)
@@ -121,7 +119,6 @@ class Turbine(models.Model):
         self.save()
         print(self.stripes)
 
-
 class JsonDataFile(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     jsonData = JSONField(blank=True, null=True)
@@ -133,19 +130,12 @@ class JsonDataFile(models.Model):
 
 class Project(models.Model):
     title = models.CharField(max_length=200, unique=True, blank=False)
-
+    description = models.TextField(max_length=3000, blank=True, null=True)
     turbine = models.ForeignKey(Turbine, related_name='turbine', null=True)
-
     directory = models.CharField(max_length=600, default=os.getcwd())
-    #datafiles = ArrayField(models.CharField(max_length=2000, null=True, blank=True), blank=True, null=True, max_length=2000)
 
     siteCalibrationFile = models.FileField(upload_to=ProjectManager.getSiteCalibrationFilePath, null=True, blank=True)
     siteCalibrationDict = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="siteCalibrationDict", on_delete=models.CASCADE)
-
-    #windDataFile = JSONField(null=True, blank=True)
-    # powerDataFile = JSONField(null=True, blank=True)
-    # lidarDataFile = JSONField(null=True, blank=True)
-    # combinedDataFile = JSONField(null=True, blank=True)
 
     windDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="windDataFile", on_delete=models.CASCADE)
     powerDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="powerDataFile", on_delete=models.CASCADE)
@@ -161,7 +151,6 @@ class Project(models.Model):
 
     def getCombinedFilePath(self):
         return MEDIA_ROOT + '/{0}/combined/'.format(self.title)
-
 
     def addDataFileNames(self, list):
         self.datafiles = list
@@ -207,10 +196,9 @@ class Project(models.Model):
         return powerCurve.validated().padded()
 
 
-
-
 class Analysis(models.Model):
     title = models.CharField(max_length=200, unique=True, blank=False)
+    description = models.TextField(max_length=3000, blank=True, null=True)
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
@@ -265,7 +253,6 @@ class Datafile(object):
         return self.directory + '/' + self.filename
 
     def addColumn(self, name, positionInFile, columnType, valueType,
-                  instrumentName=None, instrumentMake=None, instrumentModel=None,
                   instrumentCalibrationSlope=1.0, instrumentCalibrationOffset=0.0,
                   dataLoggerCalibrationSlope=1.0, dataLoggerCalibrationOffset=0.0,
                   measurementHeight=0.0, project=None):
@@ -284,7 +271,6 @@ class Datafile(object):
 
     def loadFromFile(self):
         cols = sorted([0]+[column.positionInFile for column in self.columns])
-        testvar = self.fullyQualifiedPath()
         df = pd.read_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, skiprows=self.rowsToSkip, parse_dates=True, dayfirst=True, usecols=cols, index_col=0, na_values=self.badDataValues)
         df.columns = [name[0] for name in sorted([[column.name, column.positionInFile] for column in self.columns], key=lambda column: column[1])]
         self.data = df.apply(lambda x: pd.to_numeric(x), axis=0)

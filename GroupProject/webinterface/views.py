@@ -1,34 +1,18 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from django.http import HttpResponse
 from rest_framework import viewsets, views
 from .models import Project, Turbine, Analysis, Column, JsonDataFile
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
 from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
 from windAnalysis.utility import synchroniseDataFiles
-from webinterface.testData import getWindTestData, getLidarTestData, getPowerTestData
-from django.contrib import messages
 import json
 from GroupProject.settings import MEDIA_ROOT
-from .utils import PythonObjectEncoder, as_python_object
-import pandas as pd
+from .utils import PythonObjectEncoder, as_python_object, convertToSiteCalibrationDict
+from django.core.exceptions import ObjectDoesNotExist
+
 def index(request):
     return render(request, 'base.html')
-
-
-def message(request, msg):
-    return HttpResponse({"message": msg})
-
-
-class LogCatViewSet(views.APIView):
-
-    def get(self, request, *args, **kwargs):
-        msg = messages.get_messages(request)
-        list = []
-        for m in msg:
-            list.append(m)
-        return JsonResponse(list)
 
 
 class TurbineViewSet(viewsets.ModelViewSet):
@@ -42,9 +26,9 @@ class TurbineViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             turbine = Turbine.objects.create(**serializer.validated_data)
             turbine.addOneMetreHorizontalStripes()
-            return Response()
+            return Response(data={"success": "Turbine Created."})
 
-        return Response()
+        return Response(data={"error": serializer.errors})
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -63,14 +47,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if serializer.is_valid():
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
                 project.save()
-                messages.add_message(request._request, messages.SUCCESS, 'Project has been created.')
                 return Response(data={"success": "Project Created."})
+        else:
+            return Response(data={"error": "Not a valid turbine."})
 
-        return Response()
+        return Response(data={"error": serializer.errors})
 
     def update(self, request, *args, **kwargs):
 
-        project = Project.objects.get(title=request.data['projectTitle'])
+
+        try:
+            project = Project.objects.get(title=request.data['projectTitle'])
+        except ObjectDoesNotExist:
+            return Response(data={"error": "Project does not exist."})
 
         files = []
 
@@ -78,20 +67,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.siteCalibrationFile = request.data['siteCalibrationFile']
             project.save()
             path = MEDIA_ROOT + '/' + project.title + '/sitecalibration/siteCalibration.txt'
-            parse = pd.read_csv(path, sep='\t')
-            valueDict = parse.to_dict()
+            siteCalData = convertToSiteCalibrationDict(path)
 
-            degree = list(valueDict['degree'].values())
-            offset = list(valueDict['offset'].values())
-            slope = list(valueDict['slope'].values())
-            siteCalDict = {}
-
-            for ss, elem in enumerate(degree):
-                siteCalDict[str(elem)] = {}
-                siteCalDict[str(elem)]['slope'] = slope[ss]
-                siteCalDict[str(elem)]['offset'] = offset[ss]
-
-            jsonData, created = JsonDataFile.objects.get_or_create(name='siteCalibration', jsonData=json.dumps(siteCalDict, cls=PythonObjectEncoder), projectID=project.id)
+            jsonData, created = JsonDataFile.objects.get_or_create(name='siteCalibration', jsonData=json.dumps(siteCalData, cls=PythonObjectEncoder), projectID=project.id)
             project.siteCalibrationDict = jsonData
             project.save()
 
@@ -101,9 +79,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.save()
 
             data = json.loads(request.data['mastFileDict'])
-
             addDataToFile(mastFile, data, project)
-
             jsonDataFile = json.dumps(mastFile, cls=PythonObjectEncoder)
 
             mastFile.loadFromFile()
@@ -136,6 +112,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if 'powerFile' in request.data:
             project.powerFile = request.data['powerFile']
+            print(request.data['powerFileDict'])
             project.save()
             powerFile = project.addDatafile('power.txt', project.directory + '/media/' + project.title + '/rawDataFiles/',
                             FileType.POWER, columnSeparator='\t')
@@ -164,7 +141,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.combinedDataFile = jFile
 
         project.save()
-        return Response()
+        return Response(data={"success": "Project files have been uploaded."})
 
 
 class AnalysisViewSet(viewsets.ModelViewSet):
@@ -175,7 +152,11 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
 
         serializer = self.serializer_class(data=request.data)
-        project = Project.objects.get(title=request.data['project']['title'])
+
+        try:
+            project = Project.objects.get(title=request.data['project']['title'])
+        except ObjectDoesNotExist:
+            return Response(data={"success": "Project does not exist."})
 
         if project:
             if serializer.is_valid():
@@ -199,11 +180,10 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                      dataFile = JsonDataFile.objects.get(id=project.combinedDataFile.id)
                      files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
-
                 dummy(project, files)
-                return Response()
+                return Response(data={"success": "Analysis has been created"})
 
-        return Response()
+        return Response(data={"error": serializer.errors})
 
     def list(self, request, title=None):
         analysis = Analysis.objects.get(title=title)
@@ -242,31 +222,7 @@ def addDataToFile(dataFile, data, project):
 
     for key, val in data.items():
         if key == 'colSets':
-            print('colsets')
             dataFile.addColumnSet(**val)
         else:
-            print(key)
-            print(val)
             dataFile.addColumn(project=project, **val)
 
-
-
-
-
-class JsonResponse(HttpResponse):
-    def init__(self, data):
-        content = json.dumps(data, indent=2, ensure_ascii=False)
-        super(JsonResponse, self).__init__(content=content,mimetype='application/json; charset=utf8')
-
-
-def getLogMessages(request):
-    storage = messages.get_messages(request)
-    data = []
-
-    for message in storage:
-        data.append({
-            'message': message.message,
-            'status': message.tags
-        })
-
-    return JsonResponse(data)

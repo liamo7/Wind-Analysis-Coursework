@@ -1,0 +1,44 @@
+<h1 class="page-header text-center">Create A Project</h1>
+<div class="row placeholder">
+   <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;">
+
+       <select ng-model="selectedCalc">
+           <option value="" disabled selected>Select A Calculation</option>
+           <option>Air Density</option>
+           <option>Hub Height Specific Energy Production</option>
+           <option>Normalised Wind Speed</option>
+           <option>Power Derivation</option>
+           <option>Site Corrected Wind Speed</option>
+           <option>Two Height Wind Shear Exponent</option>
+           <option>Turbulence Intensity</option>
+           <option>Wind Direction Bin</option>
+           <option>Wind Speed Bin</option>
+           <option>Wind Shear Exponent Polyfit</option>
+       </select>
+       <button ng-click="addCalculation(selectedCalc)">Add Calc</button>
+
+       <select>
+           <option value="" disabled selected>Select A Column</option>
+           <option ng-repeat="colName in columnNames" value="{[{colName}]}">{[{colName}]}</option>
+       </select>
+
+       <select>
+           <option value="" disabled selected>Select A Column Type</option>
+           <option ng-repeat="col in columnTypes" value="{[{col}]}">{[{col}]}</option>
+       </select>
+
+       <table>
+          <thead>
+            <tr>
+              <th width="200">Calculation Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="calc in calculationRows">
+              <td>{[{calc}]}</td>
+            </tr>
+          </tbody>
+       </table>
+
+   </div>
+</div>

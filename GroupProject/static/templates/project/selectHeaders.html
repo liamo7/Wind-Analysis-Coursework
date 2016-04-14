@@ -1,62 +1,56 @@
 <div class="ngdialog-message overideDialog">
-    <h2>Column Selection</h2>
+   <h2>Column Selection</h2>
+   <button ng-click="fillMast()">Mast File Template</button>
+   <button ng-click="fillLidar()">Lidar File Template</button>
+   <button ng-click="fillPower()">Power File Template</button>
 
-    <div style="max-height:70vh;overflow-y: scroll;">
-        <div class="well">
-            <div ng-repeat="colName in columnNames">
-
-                <input type="checkbox" ng-true-value="" ng-false-value="false"
-                       ng-model="fileData['col' + $index].toUse">
-                <label>{[{ colName }]}</label>
-
-                <select ng-model="fileData['col' + $index].columnType">
-                    <option value="" disabled selected>Column Type</option>
-                    <option ng-repeat="col in columnTypes" value="{[{ col }]}">{[{col}]}</option>
-                </select>
-
-                <select ng-model="fileData['col' + $index].valueType">
-                    <option value="" disabled selected>Value Type</option>
-                    <option ng-repeat="col in valueTypes" value="{[{ col}]}">{[{col}]}</option>
-                </select>
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <label>Measurement Height</label>
-                        <br>
-                        <input placeholder="Measurement Height" type="number" name="measurementHeight"
-                               ng-model="fileData['col' + $index].measurementHeight">
-                    </div>
-                    <div class="col-md-4">
-                        <label>Instrument Calibration</label>
-                        <br>
-                        <input placeholder="Slope" type="number" name="instrumentCalibrationSlope"
-                               ng-model="fileData['col' + $index].instrumentCalibrationSlope">
-                        <br>
-                        <input placeholder="Offset" type="number" name="instrumentCalibrationOffset"
-                               ng-model="fileData['col' + $index].instrumentCalibrationOffset">
-                    </div>
-                    <div class="col-md-4">
-                        <label>Data Logger Calibration</label>
-                        <br>
-                        <input placeholder="Slope" type="number" name="dataLoggerCalibrationSlope"
-                               ng-model="fileData['col' + $index].dataLoggerCalibrationSlope">
-                        <br>
-                        <input placeholder="Offset" type="number" name="dataLoggerCalibrationOffset"
-                               ng-model="fileData['col' + $index].dataLoggerCalibrationOffset">
-                    </div>
-
-                </div>
+   <div style="max-height:70vh;overflow-y: scroll;">
+      <div class="well">
+         <div ng-repeat="colName in columnNames">
+            <input id="inputCheck{[{$index}]}" type="checkbox" ng-true-value="" ng-false-value="false"
+               ng-model="fileData['col' + $index].toUse">
+            <label>{[{ colName }]}</label>
+            <select id="inputA{[{$index}]}" ng-model="fileData['col' + $index].columnType" required>
+               <option value="" disabled selected>Column Type</option>
+               <option ng-repeat="col in columnTypes" value="{[{ col }]}">{[{col}]}</option>
+            </select>
+            <select id="inputB{[{$index}]}" ng-model="fileData['col' + $index].valueType" required>
+               <option value="" disabled selected>Value Type</option>
+               <option ng-repeat="col in valueTypes" value="{[{ col}]}">{[{col}]}</option>
+            </select>
+            <div class="row">
+               <div class="col-md-4">
+                  <label>Measurement Height</label>
+                  <br>
+                  <input id="inputC{[{$index}]}" placeholder="Measurement Height" type="number" name="measurementHeight"
+                     ng-model="fileData['col' + $index].measurementHeight">
+               </div>
+               <div class="col-md-4">
+                  <label>Instrument Calibration</label>
+                  <br>
+                  <input id="inputD{[{$index}]}" placeholder="Slope" type="number" name="instrumentCalibrationSlope"
+                     ng-model="fileData['col' + $index].instrumentCalibrationSlope">
+                  <br>
+                  <input id="inputE{[{$index}]}" placeholder="Offset" type="number" name="instrumentCalibrationOffset"
+                     ng-model="fileData['col' + $index].instrumentCalibrationOffset">
+               </div>
+               <div class="col-md-4">
+                  <label>Data Logger Calibration</label>
+                  <br>
+                  <input id="inputF{[{$index}]}" placeholder="Slope" type="number" name="dataLoggerCalibrationSlope"
+                     ng-model="fileData['col' + $index].dataLoggerCalibrationSlope">
+                  <br>
+                  <input id="inputG{[{$index}]}" placeholder="Offset" type="number" name="dataLoggerCalibrationOffset"
+                     ng-model="fileData['col' + $index].dataLoggerCalibrationOffset">
+               </div>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="ngdialog-buttons">
-        <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click=closeThisDialog("Cancel")>
-            Cancel
-        </button>
-        <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click=confirm("OK")>OK</button>
-    </div>
+         </div>
+      </div>
+   </div>
+   <div class="ngdialog-buttons">
+      <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click=closeThisDialog("Cancel")>
+      Cancel
+      </button>
+      <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click=confirm("OK")>OK</button>
+   </div>
 </div>

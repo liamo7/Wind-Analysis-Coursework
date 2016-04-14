@@ -65,6 +65,10 @@ app.factory('projectService', function($http, $routeParams) {
             return $http.get('/api/v1/projects/' + $routeParams.title + '/');
         },
 
+        getProject: function (projectTitle) {
+            return $http.get('/api/v1/projects/' + projectTitle + '/');
+        },
+
         getAnalyses: function(projectTitle) {
             return $http.get('/api/v1/analyses/' + projectTitle + '/');
         },
@@ -85,9 +89,6 @@ app.factory('projectService', function($http, $routeParams) {
             return $http.get('/api/v1/valuetypes/');
         },
 
-        getLogMessages: function() {
-            return $http.get('/api/v1/logcat/')
-        }
     };
 
 });
@@ -101,17 +102,13 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.sidebarType = 'projects';
         $scope.currentProject = null;
         $scope.currentAnalysis = null;
-        $scope.logMessages = null;
         $location.path('/');
-
-        projectService.getLogMessages().then(function (response) {
-        $scope.logMessages = response.data;
-    })
     } init();
 
 
     function closeAnalysis() {
         $scope.currentAnalysis = null;
+        setSidebarType('projectOpened');
         $location.path('/project/' + $scope.currentProject.title);
     };
 
@@ -130,6 +127,10 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                 break;
 
             case 'projectOpened':
+                $scope.sidebarType = type;
+                break;
+
+            case 'analysisOpened':
                 $scope.sidebarType = type;
                 break;
         }
@@ -153,6 +154,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 
     $scope.loadAnalysis = function(analysis) {
         setCurrentAnalysis(analysis);
+        setSidebarType('analysisOpened');
     }
 
     $scope.loadProject = function(project) {
@@ -164,19 +166,26 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         });
     };
 
-    $scope.createProject = function(title, description, turbine) {
-
-        projectService.getColumnTypes();
+    $scope.createProject = function(projectTitle, projectDescription, projectTurbine, isValid) {
 
 
-        return $http.post('/api/v1/projects/', {
-            title: title,
-            description: description,
-            turbine: JSON.parse(turbine)
-        }).then(function (response) {
-            $scope.loadProject(response.config.data);
-            $location.path('/project/' + title + '/files/upload');
-        });
+        if(isValid) {
+            projectService.getColumnTypes();
+
+            $http.post('/api/v1/projects/', {
+                title: projectTitle,
+                description: projectDescription,
+                turbine: JSON.parse(projectTurbine)
+            }).then(function (response) {
+                if (response.data.success) {
+                    $scope.loadProject(response.config.data);
+                    $location.path('/project/' + title + '/files/upload');
+                }
+                else {
+                    $scope.error = response.data.error;
+                }
+            });
+        }
     };
 
     $scope.createAnalysis = function(title, project) {
@@ -185,22 +194,38 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                 title: title,
                 project: project
             }).then(function(response){
+                alert(response);
                 $scope.loadAnalysis(response.config.data);
                 $location.path('/project/' + project.title + '/' + title);
+            }, function errorCallback(response) {
+                alert(response);
             });
         }
     };
 
-    $scope.createTurbine = function(name, bin, powerInKillowats) {
-        return $http.post('/api/v1/turbines/', {
-            name: name,
-            bin: JSON.parse(bin),
-            powerInKillowats: JSON.parse(powerInKillowats),
+    $scope.createTurbine = function(name, bin, powerInKillowats, isValid) {
 
-        });
+        if(isValid) {
+            return $http.post('/api/v1/turbines/', {
+                name: name,
+                bin: JSON.parse(bin),
+                powerInKillowats: JSON.parse(powerInKillowats)
+            }).then(function successCallback(response) {
+                // this callback will be called asynchronously
+                // when the response is available
+            }, function errorCallback(response) {
+                alert(response);
+            });
+        }
     };
 
+    projectService.getColumnTypes().then(function(response) {
+        $scope.columnTypes = response.data;
+    });
 
+    projectService.getValueTypes().then(function(response) {
+        $scope.valueTypes = response.data;
+    });
 });
 
 
@@ -208,6 +233,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
     function init() {
         $scope.columnNames = null;
+        $scope.progressPercentage = 0;
         $scope.fileType = null;
 
         $scope.mastFileDict = {};
@@ -217,6 +243,169 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         $scope.anemometersCols = [];
 
     } init();
+
+
+    $scope.fillMast = function fillMast() {
+
+         $scope.fileData['col0'].columnType = "WIND_DIRECTION";
+         $scope.fileData['col0'].valueType = "MEAN";
+         $scope.fileData['col0'].measurementHeight = 82.0;
+         $scope.fileData['col0'].instrumentCalibrationSlope = 0.04577;
+         $scope.fileData['col0'].instrumentCalibrationOffset = 0.2653;
+         $scope.fileData['col0'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col0'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col1'].columnType = "WIND_SPEED";
+         $scope.fileData['col1'].valueType = "MEAN";
+         $scope.fileData['col1'].measurementHeight = 80.0;
+         $scope.fileData['col1'].instrumentCalibrationSlope = 0.04581;
+         $scope.fileData['col1'].instrumentCalibrationOffset = 0.2638;
+         $scope.fileData['col1'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col1'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col2'].columnType = "WIND_SPEED";
+         $scope.fileData['col2'].valueType = "STANDARD_DEVIATION";
+         $scope.fileData['col2'].measurementHeight = 80.0;
+         $scope.fileData['col2'].instrumentCalibrationSlope = 0.04577;
+         $scope.fileData['col2'].instrumentCalibrationOffset = 0.2688;
+         $scope.fileData['col2'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col2'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col3'].columnType = "WIND_SPEED";
+         $scope.fileData['col3'].valueType = "MEAN";
+         $scope.fileData['col3'].measurementHeight = 64.0;
+         $scope.fileData['col3'].instrumentCalibrationSlope = 0.04583;
+         $scope.fileData['col3'].instrumentCalibrationOffset = 0.2621;
+         $scope.fileData['col3'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col3'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col4'].columnType = "WIND_SPEED";
+         $scope.fileData['col4'].valueType = "MEAN";
+         $scope.fileData['col4'].measurementHeight = 35.0;
+         $scope.fileData['col4'].instrumentCalibrationSlope = 0.04581;
+         $scope.fileData['col4'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col4'].dataLoggerCalibrationSlope = 0.0462;
+         $scope.fileData['col4'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col5'].columnType = "PRESSURE";
+         $scope.fileData['col5'].valueType = "MEAN";
+         $scope.fileData['col5'].measurementHeight = 30.0;
+         $scope.fileData['col5'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col5'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col5'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col5'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col6'].columnType = "RELATIVE_HUMIDITY";
+         $scope.fileData['col6'].valueType = "MEAN";
+         $scope.fileData['col6'].measurementHeight = 30.0;
+         $scope.fileData['col6'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col6'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col6'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col6'].dataLoggerCalibrationOffset = 0.0;
+
+         $scope.fileData['col7'].columnType = "TEMPERATURE";
+         $scope.fileData['col7'].valueType = "MEAN";
+         $scope.fileData['col7'].measurementHeight = 30.0;
+         $scope.fileData['col7'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col7'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col7'].dataLoggerCalibrationSlope = 1.0;
+         $scope.fileData['col7'].dataLoggerCalibrationOffset = 0.0;
+
+    };
+
+    $scope.fillLidar = function fillLidar() {
+
+         $scope.fileData['col0'].columnType = "WIND_SPEED";
+         $scope.fileData['col0'].valueType = "MEAN";
+         $scope.fileData['col0'].measurementHeight = 132.5;
+         $scope.fileData['col0'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col0'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col0'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col0'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col1'].columnType = "WIND_SPEED";
+         $scope.fileData['col1'].valueType = "MEAN";
+         $scope.fileData['col1'].measurementHeight = 127.5;
+         $scope.fileData['col1'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col1'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col1'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col1'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col2'].columnType = "WIND_SPEED";
+         $scope.fileData['col2'].valueType = "MEAN";
+         $scope.fileData['col2'].measurementHeight = 117.5;
+         $scope.fileData['col2'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col2'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col2'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col2'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col3'].columnType = "WIND_SPEED";
+         $scope.fileData['col3'].valueType = "MEAN";
+         $scope.fileData['col3'].measurementHeight = 107.5;
+         $scope.fileData['col3'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col3'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col3'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col3'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col4'].columnType = "WIND_SPEED";
+         $scope.fileData['col4'].valueType = "MEAN";
+         $scope.fileData['col4'].measurementHeight = 97.5;
+         $scope.fileData['col4'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col4'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col4'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col4'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col5'].columnType = "WIND_SPEED";
+         $scope.fileData['col5'].valueType = "MEAN";
+         $scope.fileData['col5'].measurementHeight = 87.5;
+         $scope.fileData['col5'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col5'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col5'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col5'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col6'].columnType = "WIND_SPEED";
+         $scope.fileData['col6'].valueType = "MEAN";
+         $scope.fileData['col6'].measurementHeight = 77.5;
+         $scope.fileData['col6'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col6'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col6'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col6'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col7'].columnType = "WIND_SPEED";
+         $scope.fileData['col7'].valueType = "MEAN";
+         $scope.fileData['col7'].measurementHeight = 67.5;
+         $scope.fileData['col7'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col7'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col7'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col7'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col8'].columnType = "WIND_SPEED";
+         $scope.fileData['col8'].valueType = "MEAN";
+         $scope.fileData['col8'].measurementHeight = 57.5;
+         $scope.fileData['col8'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col8'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col8'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col8'].dataLoggerCalibrationSlope = 1.0;
+
+         $scope.fileData['col9'].columnType = "WIND_SPEED";
+         $scope.fileData['col9'].valueType = "MEAN";
+         $scope.fileData['col9'].measurementHeight = 42.5;
+         $scope.fileData['col9'].instrumentCalibrationOffset = 0.0;
+         $scope.fileData['col9'].instrumentCalibrationSlope = 1.0;
+         $scope.fileData['col9'].dataLoggerCalibrationOffset = 0.0;
+         $scope.fileData['col9'].dataLoggerCalibrationSlope = 1.0;
+    };
+
+    $scope.fillPower = function fillPower() {
+        $scope.fileData['col0'].columnType = 'POWER';
+        $scope.fileData['col0'].valueType = 'MEAN';
+        $scope.fileData['col0'].measurementHeight = 82.0;
+        $scope.fileData['col0'].instrumentCalibrationOffset = 0.0;
+        $scope.fileData['col0'].instrumentCalibrationSlope = 1.0;
+        $scope.fileData['col0'].dataLoggerCalibrationOffset = 0.0;
+        $scope.fileData['col0'].dataLoggerCalibrationSlope = 1.0;;
+    }
+
 
     $scope.uploadFiles = function(mastFile, lidarFile, powerFile, siteCalibration) {
         Upload.upload({
@@ -232,8 +421,13 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
                     projectTitle: $scope.currentProject.title,
                 },
                 method: 'put'
-            }).then(function (resp) {
-                $location.path('/project/' + title + '/');
+            }).then(function (response) {
+                alert("success")
+                $location.path('/project/' + $scope.currentProject.title + '/');
+            }, function (response) {
+                alert("Error");
+            }, function (event) {
+                $scope.progressPercentage = parseInt(100.0 * event.loaded / event.total);
         });
     };
 
@@ -251,7 +445,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         reader.onload = function (e) {
             var fileContents = e.target.result;
             var columnHeaders = fileContents.split('\n')[0].split('\t');
-            columnHeaders[columnHeaders.length-1] = columnHeaders[columnHeaders.length-1].replace('\r', ' ');
+            columnHeaders[columnHeaders.length-1] = columnHeaders[columnHeaders.length-1].replace('\r', '');
             columnHeaders.splice(0, 1);
             $scope.columnNames = columnHeaders;
             
@@ -305,17 +499,9 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
         };
 
-    projectService.getColumnTypes().then(function(response) {
-        $scope.columnTypes = response.data;
-    });
-
-    projectService.getValueTypes().then(function(response) {
-        $scope.valueTypes = response.data;
-    });
-
 });
 
-app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog) {
+app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog, projectService) {
 
     function init() {
         $scope.selectedProcess = null;
@@ -323,10 +509,22 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.processParams = ['param1', 'param2', 'param3'];
         $scope.columnNames = ['col1', 'col2', 'col3'];
 
-        $scope.selectedColumns = [];
-    }
+        $scope.syncedFile = null;
 
-    init();
+        $scope.calculationRows = [];
+
+        $scope.selectedColumns = [];
+    } init();
+
+    $scope.addCalculation = function (calc) {
+        projectService.getProject($scope.currentProject.title).then(function(response) {
+            $scope.currentProject = response.data;
+            console.log($scope.currentProject);
+
+        });
+        
+    };
+
 
     $scope.addProcess = function (process) {
         var key = Object.keys(process)[0];
@@ -344,7 +542,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.loadFunctionParams($scope.selectedProcess);
 
         ngDialog.openConfirm({
-            template: '/static/templates/analysis/createProcess.html',
+            template: '/static/templates/analysis/selectCalculations.html',
             scope: $scope
         }).then(
             function (value) {
@@ -361,6 +559,5 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
     };
 
 });
-
 
 

@@ -1,56 +1,67 @@
-
 <h1 class="page-header text-center">Create An Analysis</h1>
 <div class="row placeholder">
-    <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;" ng-controller="analysisCreationController">
-            <form role="form" ng-submit="createAnalysis(title, currentProject)">
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" class="form-control" id="title" ng-model="title"/>
-                </div>
+   <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;" ng-controller="analysisCreationController">
+      <form role="form" ng-submit="createAnalysis(title, currentProject)">
+         <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" ng-model="title"/>
+         </div>
+         <div class="form-group">
+            <label for="description">Description</label>
+            <textarea style="height: 140px;" type="text" class="form-control" id="description" ng-model="description"/>
+         </div>
+         <div class="form-group">
+            <label>Input Data File</label>
+            <select ng-model="selectedDataFile" style="width: 100%;">
+               <option value="" disabled selected>Select A Data File</option>
+               <option ng-repeat="file in ['Syncronised File', 'Derived File']" value="{[{ file }]}">{[{file}]} ({[{ currentProject.title }]})</option>
+            </select>
+         </div>
+         <div class="form-group">
+            <label id="addProcess">Add process</label>
+            <select ng-model="selectedProcess">
+               <option>Air Density</option>
+               <option>Turbulence Intensity</option>
+               <option>Wind Shear Exponent Polyfit</option>
+               <option>Two Height Wind Shear Exponent</option>
+               <option>wind_direction_bin</option>
+               <option>siteCorrectedWindSpeed</option>
+               <option>normalisedWindSpeed</option>
+               <option>windSpeedBin</option>
+               <option>hubHeightSpecificEnergyProduction</option>
+               <option>powerDeviation</option>
+            </select>
+            <a ng-click="showPrompt($event);">Add Process</a>
+         </div>
 
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea style="height: 140px;" type="text" class="form-control" id="description" ng-model="description"/>
-                </div>
+          <div class="row">
+              <div class="col-md-12">
+                  <div class="table-responsive">
+                      <table class="table table-bordered">
+                          <thead>
+                            <tr>
+                                <th>Calculation</th>
+                                <th>Column Headers</th>
+                                <th>Column Type</th>
+                            </tr>
+                          </thead>
 
-                <div class="form-group">
-                    <label>Input Data File</label>
-                    <select ng-model="selectedDataFile" style="width: 100%;">
-                        <option value="" disabled selected>Select A Data File</option>
-                        <option ng-repeat="file in ['Syncronised File', 'Derived File']" value="{[{ file }]}">{[{file}]}</option>
-                    </select>
-                </div>
+                          <tbody>
+                            <tr>
+                                <td>Air Density</td>
+                                <td>Col1, Col2, Col3</td>
+                                <td>AIR_DENSITY</td>
+                            </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
 
-                <div class="form-group">
-                    <label id="addProcess">Add process</label>
-                    <select ng-model="selectedProcess">
-                      <option>Air Density</option>
-                      <option>Turbulence Intensity</option>
-                      <option>Wind Shear Exponent Polyfit</option>
-                      <option>Two Height Wind Shear Exponent</option>
-                      <option>wind_direction_bin</option>
-                      <option>siteCorrectedWindSpeed</option>
-                      <option>normalisedWindSpeed</option>
-                      <option>windSpeedBin</option>
-                      <option>hubHeightSpecificEnergyProduction</option>
-                      <option>powerDeviation</option>
-                    </select>
-                    <a ng-click="showPrompt($event);">Add Process</a>
-                </div>
 
-                          <table border="1">
-          <tr>
-            <td ng-repeat="(key, value) in processes">{[{ key }]}</td>
-          </tr>
-          <tr>
-            <td ng-repeat="(key, value) in processes">{[{ value }]}</td>
-          </tr>
-        </table>
-
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary center-block">Create Project</button>
-                </div>
-            </form>
-    </div>
+         <div class="form-group">
+            <button type="submit" class="btn btn-primary center-block">Create Project</button>
+         </div>
+      </form>
+   </div>
 </div>
-

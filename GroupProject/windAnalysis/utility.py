@@ -1,4 +1,4 @@
-__author__ = 'Brian'
+_author__ = 'Brian'
 from webinterface.models import Datafile
 from .ppaTypes import *
 import pandas as pd
