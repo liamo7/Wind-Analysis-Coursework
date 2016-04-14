@@ -372,7 +372,7 @@ class Datafile(object):
 
     def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED, project=None):
 
-        print('Adding ', newColumn, '... ', end=' ')
+        # print('Adding ', newColumn, '... ', end=' ')
         if 'row' in signature(functionToApply).parameters:
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:
@@ -383,7 +383,7 @@ class Datafile(object):
             self.data[newColumn] = functionToApply(*args, **kwargs)
 
         self.addColumn(newColumn,len(self.columns)+1,columnType, valueType, measurementHeight=measurementHeightValue, project=project)
-        print("Done")
+        #print("Done")
 
     def getHubHeightColumnName(self, turbine, columnType):
         for column in self.columns:

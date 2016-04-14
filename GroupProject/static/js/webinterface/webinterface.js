@@ -193,12 +193,13 @@ app.controller('mainController', function($location, $http, $scope, projectServi
             return $http.post('/api/v1/analyses/', {
                 title: title,
                 project: project
-            }).then(function(response){
-                alert(response);
-                $scope.loadAnalysis(response.config.data);
-                $location.path('/project/' + project.title + '/' + title);
-            }, function errorCallback(response) {
-                alert(response);
+            }).then(function (response) {
+                if (response.data.success) {
+                    $scope.loadAnalysis(response.config.data);
+                    $location.path('/project/' + project.title + '/' + title);
+                } else {
+
+                }
             });
         }
     };

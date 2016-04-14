@@ -51,11 +51,13 @@ def dummy(project, files):
     meanWindSpeed = 7.5
 
     measuredPowerCurve.aepAdded(meanWindSpeed)
-    measuredPowerCurve.statistics()
-    print(measuredPowerCurve.aepMeasured(meanWindSpeed))
-    print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
+    #measuredPowerCurve.statistics()
+    #print(measuredPowerCurve.aepMeasured(meanWindSpeed))
+    #print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
 
+    plt.switch_backend('agg')
     fg, ax = plt.subplots()
+
     plt.title('Power curve scatter')
     plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
 
