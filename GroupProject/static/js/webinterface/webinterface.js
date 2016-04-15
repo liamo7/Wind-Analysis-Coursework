@@ -89,6 +89,12 @@ app.factory('projectService', function($http, $routeParams) {
             return $http.get('/api/v1/valuetypes/');
         },
 
+        getDataFiles: function (project) {
+            return $http.post('/api/v1/datafiles/', {
+                project: project
+            });
+        }
+
     };
 
 });
@@ -102,6 +108,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.sidebarType = 'projects';
         $scope.currentProject = null;
         $scope.currentAnalysis = null;
+        $scope.combinedCols = null;
         $location.path('/');
     } init();
 
@@ -423,7 +430,10 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
                 },
                 method: 'put'
             }).then(function (response) {
-                alert("success")
+                if(response.data.combinedCols)
+                    $scope.combinedCols = response.data.combinedCols;
+
+                console.log($scope.combinedCols);
                 $location.path('/project/' + $scope.currentProject.title + '/');
             }, function (response) {
                 alert("Error");
@@ -512,10 +522,30 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
         $scope.syncedFile = null;
 
-        $scope.calculationRows = [];
+        //Table related
+
+        $scope.calculationTypes = ['airDensity', 'turbulenceIntensity', 'windShearExponentPolyfit', 
+            'twoHeightWindShearExponent', 'wind_direction_bin', 'siteCorrectedWindSpeed', 'normalisedWindSpeed',
+            'windSpeedBin', 'hubHeightSpecificEnergyProduction', 'powerDeviation'];
+
+        $scope.kwargTypes = ['string', 'float', 'function'];
+
+        $scope.calculationRows = {};
 
         $scope.selectedColumns = [];
+        $scope.selectedKwargs = {};
+        $scope.selectedCalculation = null;
+        $scope.selectedColumnType = null;
+
+        $scope.tableCount = 0;
+
     } init();
+
+    projectService.getDataFiles($scope.currentProject).then(function (response) {
+        $scope.combinedCols = response.data.combinedFileCols;
+        $scope.combinedCols.push.apply($scope.combinedCols, $scope.calculationTypes);
+    });
+
 
     $scope.addCalculation = function (calc) {
         projectService.getProject($scope.currentProject.title).then(function(response) {
@@ -527,37 +557,38 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
     };
 
 
-    $scope.addProcess = function (process) {
-        var key = Object.keys(process)[0];
-        $scope.processes[key] = process[key];
-        $scope.selectedProcess = null;
+    $scope.addColumn = function(col) {
+        console.log($scope.selectedColumns.indexOf(col));
+        if($scope.selectedColumns.indexOf(col) == -1)
+            $scope.selectedColumns.push(col);
+
+        console.log($scope.selectedColumns.indexOf(col));
+    };
+    
+    $scope.addKwarg = function(key, value) {
+
+        $scope.selectedKwargs[key] = value;
+        console.log($scope.selectedKwargs);
+
     };
 
-    $scope.loadFunctionParams = function () {
-        // TODO load the function params from the server and set processParams to them
-    };
+    $scope.addTableRow = function(calcType, cols, colType, kwargs) {
 
-    $scope.showPrompt = function () {
-        ngDialog.close();
+        $scope.tableCount++;
 
-        $scope.loadFunctionParams($scope.selectedProcess);
+        $scope.calculationRows['row' + $scope.tableCount] = {};
+        $scope.calculationRows['row' + $scope.tableCount].calcType = calcType;
+        $scope.calculationRows['row' + $scope.tableCount]['cols'] = cols;
+        $scope.calculationRows['row' + $scope.tableCount]['colType'] = colType;
+        $scope.calculationRows['row' + $scope.tableCount]['kwargs'] = kwargs;
 
-        ngDialog.openConfirm({
-            template: '/static/templates/analysis/selectCalculations.html',
-            scope: $scope
-        }).then(
-            function (value) {
-                //save the contact form
-                var process = {};
-                process[$scope.selectedProcess] = [$scope.selectedColumns];
-                $scope.addProcess(process);
-            },
-            function (value) {
-                //Cancel or do nothing
-                $scope.processParams = {};
-            });
+        console.log($scope.calculationRows);
+        $scope.selectedColumns = [];
+        $scope.selectedKwargs = {};
+        $scope.selectedCalculation = null;
+        $scope.selectedColumnType = null;
 
-    };
+    }
 
 });
 

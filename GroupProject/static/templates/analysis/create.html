@@ -1,67 +1,89 @@
-<h1 class="page-header text-center">Create An Analysis</h1>
-<div class="row placeholder">
-   <div class="col-md-9 col-md-offset-2 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;" ng-controller="analysisCreationController">
-      <form role="form" ng-submit="createAnalysis(title, currentProject)">
-         <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" class="form-control" id="title" ng-model="title"/>
+<div ng-controller="analysisCreationController">
+   <form role="form" ng-submit="createAnalysis(title, currentProject)">
+      <h1 class="page-header text-center">Create An Analysis</h1>
+      <div class="row placeholder">
+         <div class="col-md-10 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;">
+            <div class="form-group">
+               <label for="title">Title</label>
+               <input type="text" class="form-control" id="title" ng-model="title"/>
+            </div>
+            <div class="form-group">
+               <label for="description">Description</label>
+               <textarea style="height: 140px;" type="text" class="form-control" id="description" ng-model="description"/>
+            </div>
+            <div class="form-group">
+               <label>Input Data File</label>
+               <select ng-model="selectedDataFile" ng-change="dataFileChange(selectedDataFile)" style="width: 100%;">
+                  <option value="" disabled selected>Select A Data File</option>
+                  <option ng-repeat="file in ['Syncronised File', 'Derived File']" value="{[{ file }]}">{[{file}]} ({[{ currentProject.title }]})</option>
+               </select>
+            </div>
          </div>
-         <div class="form-group">
-            <label for="description">Description</label>
-            <textarea style="height: 140px;" type="text" class="form-control" id="description" ng-model="description"/>
-         </div>
-         <div class="form-group">
-            <label>Input Data File</label>
-            <select ng-model="selectedDataFile" style="width: 100%;">
-               <option value="" disabled selected>Select A Data File</option>
-               <option ng-repeat="file in ['Syncronised File', 'Derived File']" value="{[{ file }]}">{[{file}]} ({[{ currentProject.title }]})</option>
-            </select>
-         </div>
-         <div class="form-group">
-            <label id="addProcess">Add process</label>
-            <select ng-model="selectedProcess">
-               <option>Air Density</option>
-               <option>Turbulence Intensity</option>
-               <option>Wind Shear Exponent Polyfit</option>
-               <option>Two Height Wind Shear Exponent</option>
-               <option>wind_direction_bin</option>
-               <option>siteCorrectedWindSpeed</option>
-               <option>normalisedWindSpeed</option>
-               <option>windSpeedBin</option>
-               <option>hubHeightSpecificEnergyProduction</option>
-               <option>powerDeviation</option>
-            </select>
-            <a ng-click="showPrompt($event);">Add Process</a>
-         </div>
+      </div>
+      <div class="row" ng-show="selectedDataFile == 'Syncronised File'">
+         <div class="col-md-12">
+            <button class="btn" type="button" ng-click="addTableRow(selectedCalculation, selectedColumns, selectedColumnType, selectedKwargs)">+</button>
+            <button class="btn" type="button">-</button>
+            <div class="">
+               <table class="table table-fixed table-bordered">
+                  <thead>
+                     <tr>
+                        <th>Calculation</th>
+                        <th>Column Arguments</th>
+                        <th>Column Type</th>
+                        <th>Kwargs</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <td class="info">
+                        <select ng-model="selectedCalculation">
+                           <option ng-repeat="calc in calculationTypes track by $index">{[{calc}]}</option>
+                        </select>
+                     </td>
+                     <td class="info form-inline">
+                        <select ng-model="selectedColumnHeader">
+                           <option ng-repeat="col in combinedCols">{[{col}]}</option>
+                        </select>
+                        <button type="button" class="btn" ng-click="addColumn(selectedColumnHeader)">+</button><br>
+                        <p ng-repeat="col in selectedColumns">{[{col}]}<br></p>
+                     </td>
+                     <td class="info">
+                        <select ng-model="selectedColumnType">
+                           <option ng-repeat="col in columnTypes">{[{col}]}</option>
+                        </select>
+                     </td>
+                     <td class="info">
+                        <select ng-model="selectedKwargType">
+                           <option ng-repeat="type in kwargTypes">{[{type}]}</option>
+                        </select>
+                        <button class="btn" type="button" ng-click="addKwarg(selectedKwargName, selectedKwargValue)">+</button><br>
+                        <label for="kwargTitle">Kwarg Name</label><input ng-model="selectedKwargName" name="kwargTitle" type="text"/></br>
+                        <label for="kwargValue">Kwarg Value</label>
+                        <input  ng-model="selectedKwargValue" name="kwargValue" ng-show="selectedKwargType=='float'" type="number"/>
+                        <input  ng-model="selectedKwargValue" name="kwargValue" ng-show="selectedKwargType=='string'" type="text"/>
+                        <select ng-model="selectedKwargValue" name="kwargValue" ng-show="selectedKwargType=='function'">
+                           <option>Function1</option>
+                           <option>Function2</option>
+                        </select>
+                         <p ng-repeat="(key, val) in selectedKwargs">{[{key}]}: {[{val}]}<br></p>
+                     </td>
+                     </tr>
 
-          <div class="row">
-              <div class="col-md-12">
-                  <div class="table-responsive">
-                      <table class="table table-bordered">
-                          <thead>
-                            <tr>
-                                <th>Calculation</th>
-                                <th>Column Headers</th>
-                                <th>Column Type</th>
-                            </tr>
-                          </thead>
-
-                          <tbody>
-                            <tr>
-                                <td>Air Density</td>
-                                <td>Col1, Col2, Col3</td>
-                                <td>AIR_DENSITY</td>
-                            </tr>
-                          </tbody>
-                      </table>
-                  </div>
-              </div>
-          </div>
+                  <tr ng-repeat="(key, row) in calculationRows">
+                      <td>{[{ row.calcType }]}</td>
+                      <td>{[{ row.cols }]}</td>
+                      <td>{[{ row.colType }]}</td>
+                      <td>{[{ row.kwargs }]}</td>
+                  </tr>
 
 
-         <div class="form-group">
-            <button type="submit" class="btn btn-primary center-block">Create Project</button>
+                  </tbody>
+               </table>
+            </div>
          </div>
-      </form>
-   </div>
+      </div>
+      <div class="form-group">
+         <button type="submit" class="btn btn-primary center-block">Create Project</button>
+      </div>
+   </form>
 </div>

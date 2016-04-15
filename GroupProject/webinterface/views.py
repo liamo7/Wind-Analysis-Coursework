@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from rest_framework import viewsets, views
 from .models import Project, Turbine, Analysis, Column, JsonDataFile
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
@@ -31,12 +32,19 @@ class TurbineViewSet(viewsets.ModelViewSet):
         return Response(data={"error": serializer.errors})
 
 
+@api_view(['POST'])
+def getDataFile(request):
+    jsonData = JsonDataFile.objects.get(name='combinedFile', id=request.data['project']['combinedDataFile'])
+    combinedFileCols = json.loads(jsonData.jsonData, object_hook=as_python_object)
+    colList = [x.name for x in combinedFileCols.columns]
+    print(colList)
+    return Response(data={'combinedFileCols': colList})
+
+
 class ProjectViewSet(viewsets.ModelViewSet):
     lookup_field = 'title'
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-
-    #parser_classes = (FormParser, MultiPartParser)
 
     def create(self, request, *args, **kwargs):
 
@@ -136,12 +144,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
             combinedFile = synchroniseDataFiles('dummy_data.txt', project.getCombinedFilePath(), files)
             combinedFile.saveToFile()
 
+            colList = [x.name for x in combinedFile.columns]
+            print(colList)
+
             jsonCombined = json.dumps(combinedFile, cls=PythonObjectEncoder)
             jFile, created = JsonDataFile.objects.get_or_create(name="combinedFile", jsonData=jsonCombined, projectID=project.id)
             project.combinedDataFile = jFile
 
         project.save()
-        return Response(data={"success": "Project files have been uploaded."})
+        return Response(data={"success": "Project files have been uploaded.", "combinedCols": colList})
 
 
 class AnalysisViewSet(viewsets.ModelViewSet):
@@ -156,7 +167,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         try:
             project = Project.objects.get(title=request.data['project']['title'])
         except ObjectDoesNotExist:
-            return Response(data={"success": "Project does not exist."})
+            return Response(data={"error": "Project does not exist."})
 
         if project:
             if serializer.is_valid():

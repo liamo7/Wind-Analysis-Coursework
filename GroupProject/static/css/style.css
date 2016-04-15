@@ -196,3 +196,11 @@ body {
 }
 
 
+.inline-ul {
+  margin-top: 30px;
+  list-style-type: none;
+}
+
+.inline-ul li {
+  display: inline;
+}
