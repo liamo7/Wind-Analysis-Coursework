@@ -371,8 +371,8 @@ class Datafile(object):
         return [c for c in self.columns if c.name in self.columnSets[columnSetName]]
 
     def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED, project=None):
-
         # print('Adding ', newColumn, '... ', end=' ')
+        print(columnArguments)
         if 'row' in signature(functionToApply).parameters:
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:

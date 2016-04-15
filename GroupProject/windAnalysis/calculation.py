@@ -140,7 +140,7 @@ def rotorEquivalentWindSpeed(row, rewsColumns, hubHeight, hubHeightWindSpeedColu
     if firstColumnAtOrAboveHubHeight.measurementHeight == hubHeight:
         REWSHubHeightWindSpeed = row[firstColumnAtOrAboveHubHeight]
     else:
-        piecewiseExponent = windShearExponentTwoHeights(row[firstColumnBelowHubHeight.name],
+        piecewiseExponent = twoHeightWindShearExponent(row[firstColumnBelowHubHeight.name],
                                                         row[firstColumnAtOrAboveHubHeight.name],
                                                         lowerHeight=firstColumnBelowHubHeight.measurementHeight,
                                                         upperHeight=firstColumnAtOrAboveHubHeight.measurementHeight)
@@ -239,6 +239,6 @@ def windShearExponentByPowerLawFit(row, urefColumn, zref, columnSet):
     return alpha
 
 
-def windShearExponentTwoHeights(lowerWindSpeed, upperWindSpeed, lowerHeight=10.0, upperHeight=10.0):
+def twoHeightWindShearExponent(lowerWindSpeed, upperWindSpeed, lowerHeight=10.0, upperHeight=10.0):
     return np.log(upperWindSpeed / lowerWindSpeed) / np.log(float(upperHeight) / float(lowerHeight))
 

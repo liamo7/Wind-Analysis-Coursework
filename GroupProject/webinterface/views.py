@@ -169,6 +169,9 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             return Response(data={"error": "Project does not exist."})
 
+        print(request.data)
+        calc = request.data['calculations']
+
         if project:
             if serializer.is_valid():
                 Analysis.objects.create(project=project, **serializer.validated_data)
@@ -191,7 +194,8 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                      dataFile = JsonDataFile.objects.get(id=project.combinedDataFile.id)
                      files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
-                dummy(project, files)
+
+                dummy(project, files, calc)
                 return Response(data={"success": "Analysis has been created"})
 
         return Response(data={"error": serializer.errors})

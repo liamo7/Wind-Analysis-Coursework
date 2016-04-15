@@ -195,21 +195,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         }
     };
 
-    $scope.createAnalysis = function(title, project) {
-        if($scope.currentProject != null) {
-            return $http.post('/api/v1/analyses/', {
-                title: title,
-                project: project
-            }).then(function (response) {
-                if (response.data.success) {
-                    $scope.loadAnalysis(response.config.data);
-                    $location.path('/project/' + project.title + '/' + title);
-                } else {
-
-                }
-            });
-        }
-    };
 
     $scope.createTurbine = function(name, bin, powerInKillowats, isValid) {
 
@@ -524,11 +509,11 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
         //Table related
 
-        $scope.calculationTypes = ['airDensity', 'turbulenceIntensity', 'windShearExponentPolyfit', 
-            'twoHeightWindShearExponent', 'wind_direction_bin', 'siteCorrectedWindSpeed', 'normalisedWindSpeed',
-            'windSpeedBin', 'hubHeightSpecificEnergyProduction', 'powerDeviation'];
+        $scope.calculationTypes = {'airDensity': 'airDensity', 'turbulenceIntensity': 'turbulenceIntensity', 'windShearExponentPolyfit': 'windShearExponentPolyfit',
+            'twoHeightWindShearExponent': 'twoHeightWindShearExponent', 'wind_direction_bin': 'bin', 'siteCorrectedWindSpeed': 'siteCorrectedWindSpeed', 'normalisedWindSpeed': 'normalisedWindSpeed',
+            'windSpeedBin': 'bin', 'hubHeightSpecificEnergyProduction': 'specificEnergyProduction', 'powerDeviation': 'powerDeviation'};
 
-        $scope.kwargTypes = ['string', 'float', 'function'];
+        $scope.kwargTypes = ['string', 'float', 'function', 'checkbox'];
 
         $scope.calculationRows = {};
 
@@ -543,7 +528,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     projectService.getDataFiles($scope.currentProject).then(function (response) {
         $scope.combinedCols = response.data.combinedFileCols;
-        $scope.combinedCols.push.apply($scope.combinedCols, $scope.calculationTypes);
+        $scope.combinedCols.push.apply($scope.combinedCols, Object.keys($scope.calculationTypes));
     });
 
 
@@ -572,14 +557,20 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     };
 
+    $scope.removeTableRow = function (row) {
+        delete $scope.calculationRows[row];
+        console.log(row);
+    }
+
     $scope.addTableRow = function(calcType, cols, colType, kwargs) {
 
         $scope.tableCount++;
 
         $scope.calculationRows['row' + $scope.tableCount] = {};
-        $scope.calculationRows['row' + $scope.tableCount].calcType = calcType;
+        $scope.calculationRows['row' + $scope.tableCount].calcType = $scope.calculationTypes[calcType];
         $scope.calculationRows['row' + $scope.tableCount]['cols'] = cols;
-        $scope.calculationRows['row' + $scope.tableCount]['colType'] = colType;
+        $scope.calculationRows['row' + $scope.tableCount]['colTypeString'] = colType;
+        $scope.calculationRows['row' + $scope.tableCount]['colType'] = $scope.columnTypes.indexOf(colType);
         $scope.calculationRows['row' + $scope.tableCount]['kwargs'] = kwargs;
 
         console.log($scope.calculationRows);
@@ -588,7 +579,91 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.selectedCalculation = null;
         $scope.selectedColumnType = null;
 
-    }
+    };
+    
+    $scope.fillTable = function () {
+      
+        $scope.calculationRows['row1'] = {};
+        $scope.calculationRows['row1'].calcType = $scope.calculationTypes['airDensity'];
+        $scope.calculationRows['row1']['cols'] = ['Pressure (mBar)', 'Temperature (C)', 'Relative humidity (%)'];
+        $scope.calculationRows['row1']['colTypeString'] = 'AIR_DENSITY';
+        $scope.calculationRows['row1']['colType'] = $scope.columnTypes.indexOf('AIR_DENSITY');
+        $scope.calculationRows['row1']['kwargs'] = {};
+
+        $scope.calculationRows['row2'] = {};
+        $scope.calculationRows['row2'].calcType = $scope.calculationTypes['turbulenceIntensity'];
+        $scope.calculationRows['row2']['cols'] = ['Mast - 80m Wind Speed Mean', 'Mast - 80m Wind Speed Std Dev'];
+        $scope.calculationRows['row2']['colTypeString'] = 'TURBULENCE_INTENSITY';
+        $scope.calculationRows['row2']['colType'] = $scope.columnTypes.indexOf('TURBULENCE_INTENSITY');
+        $scope.calculationRows['row2']['kwargs'] = {};
+
+        $scope.calculationRows['row3'] = {};
+        $scope.calculationRows['row3'].calcType = $scope.calculationTypes['twoHeightWindShearExponent'];
+        $scope.calculationRows['row3']['cols'] = ['Mast - 64m Wind Speed Mean', 'Mast - 80m Wind Speed Mean'];
+        $scope.calculationRows['row3']['colTypeString'] = 'WIND_SHEAR_EXPONENT';
+        $scope.calculationRows['row3']['colType'] = $scope.columnTypes.indexOf('WIND_SHEAR_EXPONENT');
+        $scope.calculationRows['row3']['kwargs'] = {'lowerHeight': 64, 'upperHeight': 80};
+
+        $scope.calculationRows['row4'] = {};
+        $scope.calculationRows['row4'].calcType = $scope.calculationTypes['wind_direction_bin'];
+        $scope.calculationRows['row4']['cols'] = ['Mast - 82m Wind Direction Mean'];
+        $scope.calculationRows['row4']['colTypeString'] = 'DERIVED';
+        $scope.calculationRows['row4']['colType'] = $scope.columnTypes.indexOf('DERIVED');
+        $scope.calculationRows['row4']['kwargs'] = {'binWidth': 10};
+
+        $scope.calculationRows['row5'] = {};
+        $scope.calculationRows['row5'].calcType = $scope.calculationTypes['siteCorrectedWindSpeed'];
+        $scope.calculationRows['row5']['cols'] = ['Mast - 80m Wind Speed Mean', 'wind_direction_bin'];
+        $scope.calculationRows['row5']['colTypeString'] = 'DERIVED';
+        $scope.calculationRows['row5']['colType'] = $scope.columnTypes.indexOf('DERIVED');
+        $scope.calculationRows['row5']['kwargs'] = {'factors': 'siteCalibrationFactors'};
+
+        $scope.calculationRows['row6'] = {};
+        $scope.calculationRows['row6'].calcType = $scope.calculationTypes['normalisedWindSpeed'];
+        $scope.calculationRows['row6']['cols'] = ['siteCorrectedWindSpeed', 'airDensity'];
+        $scope.calculationRows['row6']['colTypeString'] = 'WIND_SPEED';
+        $scope.calculationRows['row6']['colType'] = $scope.columnTypes.indexOf('WIND_SPEED');
+        $scope.calculationRows['row6']['kwargs'] = {};
+
+        $scope.calculationRows['row7'] = {};
+        $scope.calculationRows['row7'].calcType = 'bin';
+        $scope.calculationRows['row7']['cols'] = ['normalisedWindSpeed'];
+        $scope.calculationRows['row7']['colTypeString'] = 'DERIVED';
+        $scope.calculationRows['row7']['colType'] = $scope.columnTypes.indexOf('DERIVED');
+        $scope.calculationRows['row7']['kwargs'] = {'binWidth': 0.5, 'zeroIsBinStart': false};
+
+        $scope.calculationRows['row8'] = {};
+        $scope.calculationRows['row8'].calcType = $scope.calculationTypes['hubHeightSpecificEnergyProduction'];
+        $scope.calculationRows['row8']['cols'] = [];
+        $scope.calculationRows['row8']['colTypeString'] = 'DERIVED';
+        $scope.calculationRows['row8']['colType'] = $scope.columnTypes.indexOf('DERIVED');
+        $scope.calculationRows['row8']['kwargs'] = {'windSpeedColumn': 'normalisedWindSpeed', 'powerCurve': 'warrantedPowerCurve'};
+
+        $scope.calculationRows['row9'] = {};
+        $scope.calculationRows['row9'].calcType = $scope.calculationTypes['powerDeviation'];
+        $scope.calculationRows['row9']['cols'] = ['Power mean (kW)', 'normalisedWindSpeed'];
+        $scope.calculationRows['row9']['colTypeString'] = 'DERIVED';
+        $scope.calculationRows['row9']['colType'] = $scope.columnTypes.indexOf('DERIVED');
+        $scope.calculationRows['row9']['kwargs'] = {'powerCurve': 'warrantedPowerCurve'};
+
+    };
+
+    $scope.createAnalysis = function(title, project, calculations) {
+        if($scope.currentProject != null) {
+            return $http.post('/api/v1/analyses/', {
+                title: title,
+                calculations: calculations,
+                project: project
+            }).then(function (response) {
+                if (response.data.success) {
+                    $scope.loadAnalysis(response.config.data);
+                    $location.path('/project/' + project.title + '/' + title);
+                } else {
+
+                }
+            });
+        }
+    };
 
 });
 

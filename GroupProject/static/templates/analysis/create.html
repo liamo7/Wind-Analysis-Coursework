@@ -1,5 +1,5 @@
 <div ng-controller="analysisCreationController">
-   <form role="form" ng-submit="createAnalysis(title, currentProject)">
+   <form novalidate role="form" ng-submit="createAnalysis(title, currentProject, calculationRows)">
       <h1 class="page-header text-center">Create An Analysis</h1>
       <div class="row placeholder">
          <div class="col-md-10 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;">
@@ -23,7 +23,8 @@
       <div class="row" ng-show="selectedDataFile == 'Syncronised File'">
          <div class="col-md-12">
             <button class="btn" type="button" ng-click="addTableRow(selectedCalculation, selectedColumns, selectedColumnType, selectedKwargs)">+</button>
-            <button class="btn" type="button">-</button>
+            <button class="btn" type="button" ng-click="removeTableRow(selectedTableRow)">-</button>
+            <button class="btn" type="button" ng-click="fillTable()">-</button>
             <div class="">
                <table class="table table-fixed table-bordered">
                   <thead>
@@ -37,7 +38,7 @@
                   <tbody>
                      <td class="info">
                         <select ng-model="selectedCalculation">
-                           <option ng-repeat="calc in calculationTypes track by $index">{[{calc}]}</option>
+                           <option ng-repeat="(key, calc) in calculationTypes">{[{key}]}</option>
                         </select>
                      </td>
                      <td class="info form-inline">
@@ -62,20 +63,21 @@
                         <input  ng-model="selectedKwargValue" name="kwargValue" ng-show="selectedKwargType=='float'" type="number"/>
                         <input  ng-model="selectedKwargValue" name="kwargValue" ng-show="selectedKwargType=='string'" type="text"/>
                         <select ng-model="selectedKwargValue" name="kwargValue" ng-show="selectedKwargType=='function'">
-                           <option>Function1</option>
-                           <option>Function2</option>
+                           <option>warrantedPowerCurve</option>
+                           <option>siteCalibrationFactors</option>
                         </select>
+                         <input type="checkbox" ng-show="selectedKwargType=='checkbox'" ng-model="selectedKwargValue"/>
                          <p ng-repeat="(key, val) in selectedKwargs">{[{key}]}: {[{val}]}<br></p>
                      </td>
                      </tr>
 
-                  <tr ng-repeat="(key, row) in calculationRows">
+                  <tr ng-repeat="(key, row) in calculationRows" ng-click="removeTableRow(key)">
                       <td>{[{ row.calcType }]}</td>
                       <td>{[{ row.cols }]}</td>
-                      <td>{[{ row.colType }]}</td>
+                      <td>{[{ row.colTypeString }]}</td>
                       <td>{[{ row.kwargs }]}</td>
                   </tr>
-
+                  {[{selectedTableRow }]}
 
                   </tbody>
                </table>
