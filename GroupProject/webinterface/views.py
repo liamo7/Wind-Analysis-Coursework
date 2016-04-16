@@ -34,7 +34,8 @@ class TurbineViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 def getDataFile(request):
-    jsonData = JsonDataFile.objects.get(name='combinedFile', id=request.data['project']['combinedDataFile'])
+    print(request.data)
+    jsonData = JsonDataFile.objects.get(name='combinedFile', projectID=request.data['project']['id'])
     combinedFileCols = json.loads(jsonData.jsonData, object_hook=as_python_object)
     colList = [x.name for x in combinedFileCols.columns]
     print(colList)
@@ -78,13 +79,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
             data = json.loads(request.data['mastFileDict'])
             addDataToFile(mastFile, data, project)
-            jsonDataFile = json.dumps(mastFile, cls=PythonObjectEncoder)
 
             mastFile.loadFromFile()
             mastFile.clean()
             files.append(mastFile)
 
-            jFile, created = JsonDataFile.objects.get_or_create(name="mastFile", jsonData=jsonDataFile, projectID=project.id)
+            jFile, created = JsonDataFile.objects.get_or_create(name="mastFile", projectID=project.id)
+            jFile.jsonData = json.dumps(mastFile, cls=PythonObjectEncoder)
+            jFile.save()
+
             project.windDataFile = jFile
             project.save()
 
@@ -98,32 +101,35 @@ class ProjectViewSet(viewsets.ModelViewSet):
             data = json.loads(request.data['lidarFileDict'])
 
             addDataToFile(lidarFile, data, project)
-            jsonDataFile = json.dumps(lidarFile, cls=PythonObjectEncoder)
 
             lidarFile.loadFromFile()
             lidarFile.clean()
             files.append(lidarFile)
 
-            jFile, created = JsonDataFile.objects.get_or_create(name="lidarFile", jsonData=jsonDataFile, projectID=project.id)
+            jFile, created = JsonDataFile.objects.get_or_create(name="lidarFile", projectID=project.id)
+            jFile.jsonData = json.dumps(lidarFile, cls=PythonObjectEncoder)
+            jFile.save()
+
             project.lidarDataFile = jFile
             project.save()
 
         if 'powerFile' in request.data:
             project.powerFile = request.data['powerFile']
-            print(request.data['powerFileDict'])
             project.save()
             powerFile = project.addDatafile('power.txt', project.directory + '/media/' + project.title + '/rawDataFiles/',
                             FileType.POWER, columnSeparator='\t')
 
             data = json.loads(request.data['powerFileDict'])
             addDataToFile(powerFile, data, project)
-            jsonDataFile = json.dumps(powerFile, cls=PythonObjectEncoder)
 
             powerFile.loadFromFile()
             powerFile.clean()
             files.append(powerFile)
 
-            jFile, created = JsonDataFile.objects.get_or_create(name="powerFile", jsonData=jsonDataFile, projectID=project.id)
+            jFile, created = JsonDataFile.objects.get_or_create(name="powerFile", projectID=project.id)
+            jFile.jsonData = json.dumps(powerFile, cls=PythonObjectEncoder)
+            jFile.save()
+
             project.powerDataFile = jFile
             project.save()
 
@@ -133,24 +139,26 @@ class ProjectViewSet(viewsets.ModelViewSet):
             path = MEDIA_ROOT + '/' + project.title + '/sitecalibration/siteCalibration.txt'
             siteCalData = convertToSiteCalibrationDict(path)
 
-            jsonData, created = JsonDataFile.objects.get_or_create(name='siteCalibration', jsonData=json.dumps(siteCalData, cls=PythonObjectEncoder), projectID=project.id)
+            jFile, created = JsonDataFile.objects.get_or_create(name='siteCalibration', projectID=project.id)
+            jFile.jsonData = jsonData=json.dumps(siteCalData, cls=PythonObjectEncoder)
+            jFile.save()
+
             project.siteCalibrationDict = jsonData
             project.save()
             return Response(data={"success": "Site Calibration file has been uploaded."})
-
-        project.save()
-
 
         if files:
             combinedFile = synchroniseDataFiles('dummy_data.txt', project.getCombinedFilePath(), files)
             combinedFile.saveToFile()
 
             colList = [x.name for x in combinedFile.columns]
-            print(colList)
 
-            jsonCombined = json.dumps(combinedFile, cls=PythonObjectEncoder)
-            jFile, created = JsonDataFile.objects.get_or_create(name="combinedFile", jsonData=jsonCombined, projectID=project.id)
+            jFile, created = JsonDataFile.objects.get_or_create(name="combinedFile", projectID=project.id)
+            jFile.jsonData = json.dumps(combinedFile, cls=PythonObjectEncoder)
+            jFile.save()
+
             project.combinedDataFile = jFile
+            project.save()
             return Response(data={"success": "Project files have been uploaded.", "combinedCols": colList})
 
         project.save()
