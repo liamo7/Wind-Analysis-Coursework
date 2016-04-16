@@ -1,4 +1,4 @@
-var app = angular.module('webinterface', ['ngRoute', 'ngDialog', 'ngFileUpload']);
+var app = angular.module('webinterface', ['ngRoute', 'ngDialog', 'ngFileUpload', 'toaster', 'ngAnimate']);
 
 
 app.config(function($locationProvider, $interpolateProvider, $routeProvider, $httpProvider) {
@@ -100,7 +100,7 @@ app.factory('projectService', function($http, $routeParams) {
 });
 
 
-app.controller('mainController', function($location, $http, $scope, projectService) {
+app.controller('mainController', function($location, $http, $scope, projectService, toaster) {
 
     function init() {
         $scope.currentProject = null;
@@ -187,9 +187,10 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                 if (response.data.success) {
                     $scope.loadProject(response.config.data);
                     $location.path('/project/' + title + '/files/upload');
+                    toaster.pop('success', response.data.success)
                 }
                 else {
-                    $scope.error = response.data.error;
+                    toaster.pop('error', response.data.error);
                 }
             });
         }
@@ -198,19 +199,20 @@ app.controller('mainController', function($location, $http, $scope, projectServi
 
     $scope.createTurbine = function(name, bin, powerInKillowats, isValid) {
 
-        if(isValid) {
+        if (isValid) {
             return $http.post('/api/v1/turbines/', {
                 name: name,
                 bin: JSON.parse(bin),
                 powerInKillowats: JSON.parse(powerInKillowats)
-            }).then(function successCallback(response) {
-                // this callback will be called asynchronously
-                // when the response is available
-            }, function errorCallback(response) {
-                alert(response);
+            }).then(function (response) {
+                if (response.data.success) {
+                    toaster.pop('success', response.data.success);
+                } else {
+                    toaster.pop('error', response.data.error);
+                }
             });
         }
-    };
+    }
 
     projectService.getColumnTypes().then(function(response) {
         $scope.columnTypes = response.data;
@@ -219,10 +221,11 @@ app.controller('mainController', function($location, $http, $scope, projectServi
     projectService.getValueTypes().then(function(response) {
         $scope.valueTypes = response.data;
     });
+
 });
 
 
-app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService, Upload) {
+app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService, Upload, toaster) {
 
     function init() {
         $scope.columnNames = null;
@@ -415,13 +418,15 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
                 },
                 method: 'put'
             }).then(function (response) {
-                if(response.data.combinedCols)
+                if(response.data.success) {
                     $scope.combinedCols = response.data.combinedCols;
-
-                console.log($scope.combinedCols);
-                $location.path('/project/' + $scope.currentProject.title + '/');
+                    toaster.pop('success', response.data.success);
+                    $location.path('/project/' + $scope.currentProject.title + '/');
+                } else {
+                    toaster.pop('error', response.data.error);
+                    $scope.progressPercentage = 0;
+                }
             }, function (response) {
-                alert("Error");
             }, function (event) {
                 $scope.progressPercentage = parseInt(100.0 * event.loaded / event.total);
         });
@@ -497,7 +502,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
 });
 
-app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog, projectService) {
+app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog, projectService, toaster) {
 
     function init() {
         $scope.selectedProcess = null;
@@ -658,8 +663,9 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
                 if (response.data.success) {
                     $scope.loadAnalysis(response.config.data);
                     $location.path('/project/' + project.title + '/' + title);
+                    toaster.pop('success', response.data.success);
                 } else {
-
+                    toaster.pop('error', response.data.error['title'][0]);
                 }
             });
         }

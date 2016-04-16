@@ -200,6 +200,8 @@ class Analysis(models.Model):
     title = models.CharField(max_length=200, unique=True, blank=False)
     description = models.TextField(max_length=3000, blank=True, null=True)
 
+    derivedDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="derivedDataFile", on_delete=models.CASCADE)
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     class Meta:

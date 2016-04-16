@@ -59,7 +59,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         else:
             return Response(data={"error": "Not a valid turbine."})
 
-        return Response(data={"error": serializer.errors})
+        return Response(data={"error": serializer.errors['title'][0]})
 
     def update(self, request, *args, **kwargs):
 
@@ -70,16 +70,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(data={"error": "Project does not exist."})
 
         files = []
-
-        if 'siteCalibrationFile' in request.data:
-            project.siteCalibrationFile = request.data['siteCalibrationFile']
-            project.save()
-            path = MEDIA_ROOT + '/' + project.title + '/sitecalibration/siteCalibration.txt'
-            siteCalData = convertToSiteCalibrationDict(path)
-
-            jsonData, created = JsonDataFile.objects.get_or_create(name='siteCalibration', jsonData=json.dumps(siteCalData, cls=PythonObjectEncoder), projectID=project.id)
-            project.siteCalibrationDict = jsonData
-            project.save()
 
         if 'mastFile' in request.data:
             project.mastFile = request.data['mastFile']
@@ -137,6 +127,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project.powerDataFile = jFile
             project.save()
 
+        if 'siteCalibrationFile' in request.data and not files:
+            project.siteCalibrationFile = request.data['siteCalibrationFile']
+            project.save()
+            path = MEDIA_ROOT + '/' + project.title + '/sitecalibration/siteCalibration.txt'
+            siteCalData = convertToSiteCalibrationDict(path)
+
+            jsonData, created = JsonDataFile.objects.get_or_create(name='siteCalibration', jsonData=json.dumps(siteCalData, cls=PythonObjectEncoder), projectID=project.id)
+            project.siteCalibrationDict = jsonData
+            project.save()
+            return Response(data={"success": "Site Calibration file has been uploaded."})
+
         project.save()
 
 
@@ -150,9 +151,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
             jsonCombined = json.dumps(combinedFile, cls=PythonObjectEncoder)
             jFile, created = JsonDataFile.objects.get_or_create(name="combinedFile", jsonData=jsonCombined, projectID=project.id)
             project.combinedDataFile = jFile
+            return Response(data={"success": "Project files have been uploaded.", "combinedCols": colList})
 
         project.save()
-        return Response(data={"success": "Project files have been uploaded.", "combinedCols": colList})
+        return Response(data={"error": "No Data files have been loaded."})
 
 
 class AnalysisViewSet(viewsets.ModelViewSet):
