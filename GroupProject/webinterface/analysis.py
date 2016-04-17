@@ -3,13 +3,16 @@ __author__ = 'brian'
 import matplotlib.pyplot as plt, mpld3
 import windAnalysis.calculation as calculation
 import windAnalysis.plotting as plotting
-from .ppaTypes import *
+from windAnalysis.ppaTypes import *
+from .models import JsonDataFile, Analysis
+import json
+from .utils import PythonObjectEncoder, as_python_object
+from GroupProject.settings import MEDIA_ROOT, STATIC_DIR
+
+def processAnalysis(project, files, calc, analysis):
 
 
-def dummy(project, files, calc):
-
-
-    combinedFile = files[-1]
+    derivedFile = files[-1]
     # For an analysis, a file will be selected on which to perform the analysis on
     # this could be combined file, raw data files ?
     #
@@ -21,28 +24,8 @@ def dummy(project, files, calc):
                               220: {'slope': 1.0094, 'offset': 0},
                               230: {'slope': 1.0211, 'offset': 0},
                               240: {'slope': 1.0063, 'offset': 0}}
-    # combinedFile.addDerivedColumn('windShearExponentPolyfit',            calculation.windShearExponentPolyfit, kwargs= {'columnSet': combinedFile.getColumnSet('anemometers')},columnType=ColumnType.WIND_SHEAR_EXPONENT, project=project)
 
-    combinedFile.applyInstrumentCalibrations(removeOriginalCalibration=True)
-
-    # for row in calc:
-    #     kwargDict = {}
-    #
-    #     for key, value in calc[row]['kwargs'].items():
-    #
-    #         if key == 'powerCurve':
-    #             kwargDict['powerCurve'] = eval('project.turbine.' + calc[row]['kwargs']['powerCurve'] + '()')
-    #             del calc[row]['kwargs']['powerCurve']
-    #             break
-    #
-    #         if key == 'factors':
-    #             kwargDict['factors'] = siteCalibrationFactors
-    #             del calc[row]['kwargs']['factors']
-    #             break
-    #
-    #     kwargs = {**calc[row]['kwargs'], **kwargDict}
-    #    # print(kwargs)
-    #     combinedFile.addDerivedColumn(newColumn=calc[row]['calcType'], functionToApply=eval('calculation.' + calc[row]['calcType']), columnArguments=calc[row]['cols'], columnType=ColumnType(calc[row]['colType'] + 1), kwargs=kwargs, project=project)
+    derivedFile.applyInstrumentCalibrations(removeOriginalCalibration=True)
 
 
     for count, row in enumerate(calc):
@@ -66,15 +49,20 @@ def dummy(project, files, calc):
         kwargs = {**calc['row'+index]['kwargs'], **kwargDict}
         print(kwargs)
         print(str(calc['row' + index]['calcType']) + ' ' + str(calc['row' + index]['cols']) + ' ' + str(kwargs))
-        combinedFile.addDerivedColumn(newColumn=calc['row' + index]['calcType'], functionToApply=eval('calculation.' + calc['row' + index]['calcType']), columnArguments=calc['row' + index]['cols'], columnType=ColumnType(calc['row' + index]['colType'] + 1), kwargs=kwargs, project=project)
+        derivedFile.addDerivedColumn(newColumn=calc['row' + index]['calcType'], functionToApply=eval('calculation.' + calc['row' + index]['calcType']), columnArguments=calc['row' + index]['cols'], columnType=ColumnType(calc['row' + index]['colType'] + 1), kwargs=kwargs, project=project)
 
-    combinedFile.selectData()
-    combinedFile.saveAs('derived.txt', project.getDerivedFilePath())
+    derivedFile.selectData()
+    derivedFile.saveAs('derived.txt', project.getDerivedFilePath() + '/' + analysis.title + '/')
 
+    jsonDataFile, created = JsonDataFile.objects.get_or_create(name='derived', analysisID=analysis.id)
+    jsonDataFile.jsonData = json.dumps(derivedFile, cls=PythonObjectEncoder)
+    jsonDataFile.save()
+    analysis.derivedDataFile = jsonDataFile
+    analysis.save()
 
     print("Derived file created")
     # -------PostProcessing stage analysis---------------------#
-    datafile = combinedFile
+    datafile = derivedFile
 
     # measuredPowerCurve = project.makeMeasuredPowerCurve(datafile.data,'normalisedWindSpeed','Power mean (kW)','windSpeedBin')
     # measuredPowerCurve.calculatePowerCoefficients(project.turbine.radius())
@@ -86,15 +74,25 @@ def dummy(project, files, calc):
     # #print(measuredPowerCurve.aepMeasured(meanWindSpeed))
     # #print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
 
+
+
+
+
+
+def postAnalysis(project):
+
+    t = Analysis.objects.get(title='Analysis2')
+
+    dataFileObj = JsonDataFile.objects.get(name='derived', analysisID=t.id)
+    data = json.loads(dataFileObj.jsonData, object_hook=as_python_object)
+
     plt.switch_backend('agg')
     fg, ax = plt.subplots()
 
     plt.title('Power curve scatter')
     # plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
 
-    plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
+    plotting.powerCurve(data.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
     mpld3.save_html(fg, 'templates/project/test.html')
-
-
-
-
+    print(STATIC_DIR)
+    plt.savefig(STATIC_DIR + '/test.png')

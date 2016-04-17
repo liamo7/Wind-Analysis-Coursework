@@ -38,7 +38,7 @@ app.config(function($locationProvider, $interpolateProvider, $routeProvider, $ht
         })
 
         .when('/project/:title/:analysis', {
-            templateUrl: 'static/templates/test.html'
+            templateUrl: 'static/templates/analysis/detail.html'
         })
 
         .when('/turbine/create', {
@@ -73,7 +73,7 @@ app.factory('projectService', function($http, $routeParams) {
             return $http.get('/api/v1/analyses/' + projectTitle + '/');
         },
 
-        getAnalysis: function(analysisTitle) {
+        getAnalysis: function(projectTitle, analysisTitle) {
             return $http.get('/api/v1/analyses/' + projectTitle + '/');
         },
 
@@ -89,9 +89,10 @@ app.factory('projectService', function($http, $routeParams) {
             return $http.get('/api/v1/valuetypes/');
         },
 
-        getDataFiles: function (project) {
+        getDataFiles: function (type, id) {
             return $http.post('/api/v1/datafiles/', {
-                project: project
+                type: type,
+                dataID: id
             });
         }
 
@@ -109,12 +110,17 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.currentProject = null;
         $scope.currentAnalysis = null;
         $scope.combinedCols = null;
+
+        getProjects();
+        getTurbines();
+
         $location.path('/');
     } init();
 
 
     function closeAnalysis() {
         $scope.currentAnalysis = null;
+        $scope.calculationRows = null;
         setSidebarType('projectOpened');
         $location.path('/project/' + $scope.currentProject.title);
     };
@@ -143,35 +149,39 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         }
     }
 
-    function setCurrentProject(project) {
-        $scope.currentProject = project;
+    function getProjects() {
+        projectService.all().then(function(response) {
+            $scope.projectList = response.data;
+            console.log($scope.projectList);
+        });
     }
 
-    function setCurrentAnalysis(analysis) {
-        $scope.currentAnalysis = analysis;
+
+    function getTurbines() {
+        projectService.turbines().then(function(response) {
+            $scope.turbineList = response.data;
+        });
     }
-    projectService.all().then(function(response) {
-        $scope.projectList = response.data;
-    });
 
-    projectService.turbines().then(function(response) {
-        $scope.turbineList = response.data;
-    });
+    function getProject(title) {
+        projectService.getProject(title).then(function (response) {
+            $scope.currentProject = response.data;
+        })
+    }
 
+
+    function getAnalysis(title) {
+        projectService.getAnalysis(title).then(function (response) {
+            $scope.currentProject = response.data;
+        })
+    }
 
     $scope.loadAnalysis = function(analysis) {
-        setCurrentAnalysis(analysis);
+        $scope.currentAnalysis = analysis;
+        getAnalyses($scope.currentProject.title);
         setSidebarType('analysisOpened');
-    }
-
-    $scope.loadProject = function(project) {
-        setCurrentProject(project);
-        setSidebarType('projectOpened');
-
-        projectService.getAnalyses(project.title).then(function(response) {
-            $scope.analysesList = response.data;
-        });
     };
+
 
     $scope.createProject = function(projectTitle, projectDescription, projectTurbine, isValid) {
 
@@ -185,6 +195,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                 turbine: JSON.parse(projectTurbine)
             }).then(function (response) {
                 if (response.data.success) {
+                    getProjects();
                     $scope.loadProject(response.config.data);
                     $location.path('/project/' + title + '/files/upload');
                     toaster.pop('success', response.data.success)
@@ -195,7 +206,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
             });
         }
     };
-
 
     $scope.createTurbine = function(name, bin, powerInKillowats, isValid) {
 
@@ -212,7 +222,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                 }
             });
         }
-    }
+    };
 
     projectService.getColumnTypes().then(function(response) {
         $scope.columnTypes = response.data;
@@ -221,6 +231,41 @@ app.controller('mainController', function($location, $http, $scope, projectServi
     projectService.getValueTypes().then(function(response) {
         $scope.valueTypes = response.data;
     });
+
+
+    function getAnalyses(title) {
+        projectService.getAnalyses(title).then(function(response) {
+            $scope.analysesList = response.data;
+
+            if($scope.currentAnalysis != null) {
+                for(var x=0; x<$scope.analysesList.length; x++) {;
+                    if($scope.currentAnalysis.title == $scope.analysesList[x].title) {
+                        setSidebarType('analysisOpened');
+                        $scope.currentAnalysis = $scope.analysesList[x];
+                        console.log("X");
+                        console.log($scope.currentAnalysis);
+
+                        if($scope.currentAnalysis.analysisType == 1) {
+                            projectService.getDataFiles('calculation', $scope.currentAnalysis['id']).then(function (response) {
+                                $scope.calculationRows = response.data;
+                                console.log($scope.calculationRows);
+                                console.log("JSWDA");
+                            });
+                        }
+                    }
+                }
+            }
+
+        });
+    }
+
+    $scope.loadProject = function(project) {
+
+        getProject(project.title);
+        setSidebarType('projectOpened');
+        getAnalyses(project.title);
+    };
+
 
 });
 
@@ -505,12 +550,9 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog, projectService, toaster) {
 
     function init() {
-        $scope.selectedProcess = null;
-        $scope.processes = {};
-        $scope.processParams = ['param1', 'param2', 'param3'];
-        $scope.columnNames = ['col1', 'col2', 'col3'];
-
+        $scope.columnNames = [];
         $scope.syncedFile = null;
+        $scope.dataFiles = {1: 'Synchronised', 2: 'Derived'};
 
         //Table related
 
@@ -531,11 +573,10 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     } init();
 
-    projectService.getDataFiles($scope.currentProject).then(function (response) {
+    projectService.getDataFiles('combined', $scope.currentProject['id']).then(function (response) {
         $scope.combinedCols = response.data.combinedFileCols;
         $scope.combinedCols.push.apply($scope.combinedCols, Object.keys($scope.calculationTypes));
     });
-
 
     $scope.addCalculation = function (calc) {
         projectService.getProject($scope.currentProject.title).then(function(response) {
@@ -545,7 +586,6 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         });
         
     };
-
 
     $scope.addColumn = function(col) {
         console.log($scope.selectedColumns.indexOf(col));
@@ -653,23 +693,25 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     };
 
-    $scope.createAnalysis = function(title, project, calculations) {
+    $scope.createAnalysis = function(title, project, calculations, analysisType) {
         if($scope.currentProject != null) {
             return $http.post('/api/v1/analyses/', {
                 title: title,
                 calculations: calculations,
-                project: project
+                project: project,
+                typeAnalysis: analysisType
             }).then(function (response) {
                 if (response.data.success) {
                     $scope.loadAnalysis(response.config.data);
                     $location.path('/project/' + project.title + '/' + title);
                     toaster.pop('success', response.data.success);
                 } else {
-                    toaster.pop('error', response.data.error['title'][0]);
+                    toaster.pop('error', response.data.error);
                 }
             });
         }
     };
+
 
 });
 

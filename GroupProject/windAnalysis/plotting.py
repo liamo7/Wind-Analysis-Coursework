@@ -99,6 +99,7 @@ def mapToColorHex(rangeMin, rangeMax, value):
 def orderedWindShearExponent(data):
     plt.figure()
     plt.title('Ordered wind shear exponent')
+    print(data)
     scatter = plt.scatter(range(len(data['WindShearExponent'])), sorted(data['WindShearExponent']), color=['r'])
     plt.show()
 

@@ -1,0 +1,30 @@
+{% load staticfiles %}
+
+<div ng-show="currentAnalysis.analysisType == 1" class="row">
+    <div class="col-md-12">
+       <table class="table table-fixed table-bordered" >
+                  <thead>
+                     <tr>
+                        <th>Calculation</th>
+                        <th>Column Arguments</th>
+                        <th>Column Type</th>
+                        <th>Kwargs</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                  <tr ng-repeat="(key, row) in calculationRows.calculationRows">
+                      <td>{[{ row.calcType }]}</td>
+                      <td>{[{ row.cols }]}</td>
+                      <td>{[{ row.colTypeString }]}</td>
+                      <td>{[{ row.kwargs }]}</td>
+                  </tr>
+                  </tbody>
+               </table>
+    </div>
+</div>
+
+
+
+<div ng-show="currentAnalysis.analysisType == 2">
+    <img src="static/test.png"/>
+</div>

@@ -1,5 +1,5 @@
 <div ng-controller="analysisCreationController">
-   <form novalidate role="form" ng-submit="createAnalysis(title, currentProject, calculationRows)">
+   <form novalidate role="form" ng-submit="createAnalysis(title, currentProject, calculationRows, selectedDataFile)">
       <h1 class="page-header text-center">Create An Analysis</h1>
       <div class="row placeholder">
          <div class="col-md-10 col-sm-6 col-sm-offset-1 placeholder" style="margin-top: 40px;">
@@ -15,12 +15,12 @@
                <label>Input Data File</label>
                <select ng-model="selectedDataFile" ng-change="dataFileChange(selectedDataFile)" style="width: 100%;">
                   <option value="" disabled selected>Select A Data File</option>
-                  <option ng-repeat="file in ['Syncronised File', 'Derived File']" value="{[{ file }]}">{[{file}]} ({[{ currentProject.title }]})</option>
+                  <option ng-repeat="file in ['Synchronised', 'Derived']" value="{[{ file }]}">{[{file}]} ({[{ currentProject.title }]})</option>
                </select>
             </div>
          </div>
       </div>
-      <div class="row" ng-show="selectedDataFile == 'Syncronised File'">
+      <div class="row" ng-show="selectedDataFile == 'Synchronised'">
          <div class="col-md-12">
             <button class="btn" type="button" ng-click="addTableRow(selectedCalculation, selectedColumns, selectedColumnType, selectedKwargs)">+</button>
             <button class="btn" type="button" ng-click="removeTableRow(selectedTableRow)">-</button>
@@ -77,15 +77,46 @@
                       <td>{[{ row.colTypeString }]}</td>
                       <td>{[{ row.kwargs }]}</td>
                   </tr>
-                  {[{selectedTableRow }]}
-
                   </tbody>
                </table>
             </div>
          </div>
       </div>
+
+
+
+         <div class="row" ng-show="selectedDataFile=='Derived'">
+          <div class="col-md-12">
+              <select ng-model="selectedPlotType">
+                  <option>Correlation</option>
+                  <option>Distribution</option>
+                  <option>FFT</option>
+                  <option>PowerCurve</option>
+              </select>
+
+
+              <div ng-show="selectedPlotType=='Correlation'">
+                  {[{ selectedPlotType }]}
+              </div>
+
+              <div ng-show="selectedPlotType=='Distribution'">
+                  {[{ selectedPlotType }]}
+              </div>
+
+              <div ng-show="selectedPlotType=='FFT'">
+                  {[{ selectedPlotType }]}
+              </div>
+
+              <div ng-show="selectedPlotType=='PowerCurve'">
+                  {[{ selectedPlotType }]}
+              </div>
+
+          </div>
+      </div>
+
+
       <div class="form-group">
-         <button type="submit" class="btn btn-primary center-block">Create Project</button>
+         <button type="submit" class="btn btn-primary center-block">Create Analysis</button>
       </div>
    </form>
 </div>

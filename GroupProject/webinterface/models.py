@@ -122,8 +122,8 @@ class Turbine(models.Model):
 class JsonDataFile(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     jsonData = JSONField(blank=True, null=True)
-
     projectID = models.IntegerField(blank=True, null=True)
+    analysisID = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -151,6 +151,9 @@ class Project(models.Model):
 
     def getCombinedFilePath(self):
         return MEDIA_ROOT + '/{0}/combined/'.format(self.title)
+
+    def getDerivedFilePath(self):
+        return '{0}/derived/'.format(self.title)
 
     def addDataFileNames(self, list):
         self.datafiles = list
@@ -195,12 +198,21 @@ class Project(models.Model):
 
         return powerCurve.validated().padded()
 
+ANALYSIS_CHOICES = (
+    (1, "Synchronised"),
+    (2, "Derived")
+)
+
 
 class Analysis(models.Model):
     title = models.CharField(max_length=200, unique=True, blank=False)
     description = models.TextField(max_length=3000, blank=True, null=True)
 
+    analysisType = models.IntegerField(choices=ANALYSIS_CHOICES, blank=True, null=True)
+
     derivedDataFile = models.ForeignKey(JsonDataFile, null=True, blank=True, related_name="derivedDataFile", on_delete=models.CASCADE)
+
+    tableRows = models.ForeignKey(JsonDataFile, null=True, blank=True)
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
@@ -280,7 +292,15 @@ class Datafile(object):
         print("Data loaded: " + self.filename)
 
     def saveToFile(self):
-        self.data.to_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
+        print(self.directory)
+        if self.filename == 'derived.txt':
+            if not os.path.exists(self.directory):
+                os.makedirs(MEDIA_ROOT + '/' + self.directory)
+                self.data.to_csv(MEDIA_ROOT + '/' + self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
+            else:
+                self.data.to_csv(MEDIA_ROOT + '/' + self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
+        else:
+            self.data.to_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
         print("Data saved: " + self.filename)
 
     def clean(self):

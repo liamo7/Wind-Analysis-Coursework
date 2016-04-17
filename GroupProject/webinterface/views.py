@@ -4,13 +4,13 @@ from rest_framework.decorators import api_view
 from rest_framework import viewsets, views
 from .models import Project, Turbine, Analysis, Column, JsonDataFile
 from .serializer import ProjectSerializer, TurbineSerializer, AnalysisSerializer, ColumnSerializer
-from windAnalysis.dummy_analysis import dummy
 from windAnalysis.ppaTypes import *
 from windAnalysis.utility import synchroniseDataFiles
 import json
 from GroupProject.settings import MEDIA_ROOT
 from .utils import PythonObjectEncoder, as_python_object, convertToSiteCalibrationDict
 from django.core.exceptions import ObjectDoesNotExist
+from .analysis import processAnalysis, postAnalysis
 
 def index(request):
     return render(request, 'base.html')
@@ -35,11 +35,33 @@ class TurbineViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 def getDataFile(request):
     print(request.data)
-    jsonData = JsonDataFile.objects.get(name='combinedFile', projectID=request.data['project']['id'])
-    combinedFileCols = json.loads(jsonData.jsonData, object_hook=as_python_object)
-    colList = [x.name for x in combinedFileCols.columns]
-    print(colList)
-    return Response(data={'combinedFileCols': colList})
+
+    if request.data['type'] == 'combined':
+        try:
+            jsonData = JsonDataFile.objects.get(name='combinedFile', projectID=request.data['dataID'])
+            #Get derived files from analyses within project
+            containingProject = Project.objects.get(id=request.data['dataID'])
+            analysisList = Analysis.objects.filter(project=containingProject)
+
+        except ObjectDoesNotExist:
+            return Response(data={'error': 'Combined File does not exist.'})
+
+        combinedFileCols = json.loads(jsonData.jsonData, object_hook=as_python_object)
+        colList = [x.name for x in combinedFileCols.columns]
+        return Response(data={'combinedFileCols': colList})
+
+    elif request.data['type'] == 'calculation':
+        try:
+            jsonData = JsonDataFile.objects.get(name='calculations', analysisID=request.data['dataID'])
+            print(jsonData.jsonData)
+        except ObjectDoesNotExist:
+            return Response(data={'error': 'Calculations not set'})
+
+        calcTable = jsonData.jsonData
+
+        print(calcTable)
+        return Response(data={'calculationRows': jsonData.jsonData})
+
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -54,13 +76,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if turbine:
             if serializer.is_valid():
+                print(serializer.validated_data)
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
                 project.save()
                 return Response(data={"success": "Project Created."})
         else:
             return Response(data={"error": "Not a valid turbine."})
 
-        return Response(data={"error": serializer.errors['title'][0]})
+        return Response(data={"error": serializer.errors[0]})
 
     def update(self, request, *args, **kwargs):
 
@@ -171,6 +194,7 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisSerializer
 
     def create(self, request, *args, **kwargs):
+        print(request.data)
 
         serializer = self.serializer_class(data=request.data)
 
@@ -184,7 +208,8 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
         if project:
             if serializer.is_valid():
-                Analysis.objects.create(project=project, **serializer.validated_data)
+
+                analysis = Analysis.objects.create(project=project, **serializer.validated_data)
 
                 files = []
 
@@ -204,8 +229,24 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                      dataFile = JsonDataFile.objects.get(id=project.combinedDataFile.id)
                      files.append(json.loads(dataFile.jsonData, object_hook=as_python_object))
 
+                if request.data['typeAnalysis'] == 'Synchronised':
+                    # Create or replace the current table data for current analysis
+                    tableCalcData, created = JsonDataFile.objects.get_or_create(name='calculations', analysisID=analysis.id)
+                    tableCalcData.jsonData = calc
+                    tableCalcData.save()
 
-                dummy(project, files, calc)
+                    analysis.tableRows = tableCalcData
+                    analysis.analysisType = 1
+                    print(analysis.tableRows)
+                    analysis.save()
+                    print(analysis.analysisType)
+                    processAnalysis(project, files, calc, analysis)
+
+                elif request.data['typeAnalysis'] == 'Derived':
+                    analysis.analysisType = 2
+                    analysis.save()
+                    postAnalysis(project)
+
                 return Response(data={"success": "Analysis has been created"})
 
         return Response(data={"error": serializer.errors})
