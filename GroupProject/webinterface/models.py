@@ -36,7 +36,7 @@ class ProjectManager(models.Manager):
 class Turbine(models.Model):
     name = models.CharField(max_length=300, unique=True, blank=False)
     manufacturer = models.CharField(max_length=300, blank=True, null=True)
-    model =models.CharField(max_length=300, blank=True, null=True)
+    model = models.CharField(max_length=300, blank=True, null=True)
 
     hubHeight = models.FloatField(blank=False, null=False, default=80)
     diameter = models.FloatField(blank=False, null=False, default=90)
