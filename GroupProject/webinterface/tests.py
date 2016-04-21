@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.core import serializers
 from .models import *
 
 
@@ -87,3 +86,41 @@ class AnalysisTestCase(TestCase):
         self.assertEqual(analysis.title, 'TestCase_Analysis')
         self.assertEqual(analysis.description, 'TestCase_Description')
         self.assertEqual(analysis.analysisType, 0)
+
+
+class ColumnTestCase(TestCase):
+    def setUp(self):
+        project = Project.objects.create()
+        Column.objects.create(name="TestCase_Column",
+                              positionInFile=0,
+                              columnType=1,
+                              valueType=2,
+                              instrumentCalibrationSlope=10,
+                              instrumentCalibrationOffset=11,
+                              dataLoggerCalibrationSlope=12,
+                              dataLoggerCalibrationOffset=13,
+                              measurementHeight=14,
+                              segmentWeighting=15,
+                              inferiorLimitHeight=16,
+                              superiorLimitHeight=17,
+                              segmentHeight=18,
+                              project=project)
+
+    def testCreatedCorrectly(self):
+        analysis = Column.objects.get(name="TestCase_Column")
+        self.assertEqual(analysis.name, 'TestCase_Column')
+        self.assertEqual(analysis.positionInFile, 0)
+        self.assertEqual(analysis.columnType, ColumnType(1))
+        self.assertEqual(analysis.valueType, ValueType(2))
+        self.assertEqual(analysis.instrumentCalibrationSlope, 10)
+        self.assertEqual(analysis.instrumentCalibrationOffset, 11)
+        self.assertEqual(analysis.dataLoggerCalibrationSlope, 12)
+        self.assertEqual(analysis.dataLoggerCalibrationOffset, 13)
+        self.assertEqual(analysis.measurementHeight, 14)
+        self.assertEqual(analysis.segmentWeighting, 15)
+        self.assertEqual(analysis.inferiorLimitHeight, 16)
+        self.assertEqual(analysis.superiorLimitHeight, 17)
+        self.assertEqual(analysis.segmentHeight, 18)
+
+
+
