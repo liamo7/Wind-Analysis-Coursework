@@ -8,6 +8,7 @@ from .models import JsonDataFile, Analysis
 import json
 from .utils import PythonObjectEncoder, as_python_object
 from GroupProject.settings import MEDIA_ROOT, STATIC_DIR
+import os
 
 def processAnalysis(project, files, calc, analysis):
 
@@ -32,9 +33,8 @@ def processAnalysis(project, files, calc, analysis):
         kwargDict = {}
         count += 1
         index = str(count)
-        for key, value in calc['row' + str(index)]['kwargs'].items():
+        for key, value in calc['row' + index]['kwargs'].items():
             if key == 'powerCurve':
-                print("POWERCURVE")
                 kwargDict['powerCurve'] = eval('project.turbine.' + calc['row' + index]['kwargs']['powerCurve'] + '()')
 
             if key == 'factors':
@@ -46,9 +46,8 @@ def processAnalysis(project, files, calc, analysis):
         if 'factors' in calc['row' + index]['kwargs']:
             del calc['row' + index]['kwargs']['factors']
 
+
         kwargs = {**calc['row'+index]['kwargs'], **kwargDict}
-        print(kwargs)
-        print(str(calc['row' + index]['calcType']) + ' ' + str(calc['row' + index]['cols']) + ' ' + str(kwargs))
         derivedFile.addDerivedColumn(newColumn=calc['row' + index]['calcType'], functionToApply=eval('calculation.' + calc['row' + index]['calcType']), columnArguments=calc['row' + index]['cols'], columnType=ColumnType(calc['row' + index]['colType'] + 1), kwargs=kwargs, project=project)
 
     derivedFile.selectData()
@@ -60,39 +59,95 @@ def processAnalysis(project, files, calc, analysis):
     analysis.derivedDataFile = jsonDataFile
     analysis.save()
 
-    print("Derived file created")
-    # -------PostProcessing stage analysis---------------------#
-    datafile = derivedFile
 
-    # measuredPowerCurve = project.makeMeasuredPowerCurve(datafile.data,'normalisedWindSpeed','Power mean (kW)','windSpeedBin')
+def postAnalysis(project, currentAnalysis, plotTypes):
+
+    analysis = Analysis.objects.get(title='Analysis2')
+
+    dataFileObj = JsonDataFile.objects.get(name='derived', analysisID=analysis.id)
+    data = json.loads(dataFileObj.jsonData, object_hook=as_python_object)
+
+    # # -------PostProcessing stage analysis---------------------#
+    # measuredPowerCurve = project.makeMeasuredPowerCurve(data.data, 'normalisedWindSpeed', 'Power mean (kW)', 'bin')
     # measuredPowerCurve.calculatePowerCoefficients(project.turbine.radius())
     #
     # meanWindSpeed = 7.5
     #
     # measuredPowerCurve.aepAdded(meanWindSpeed)
-    # #measuredPowerCurve.statistics()
-    # #print(measuredPowerCurve.aepMeasured(meanWindSpeed))
-    # #print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
+    # measuredPowerCurve.statistics()
+    # print(measuredPowerCurve.aepMeasured(meanWindSpeed))
+    # print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
+
+    plotData = {}
+
+    for sType in plotTypes:
+
+        if 'PowerCurve' in plotTypes[sType]['plotType']:
+            createPowerCurve(data, plotTypes[sType]['cols'], currentAnalysis)
+        if 'Distribution' in plotTypes[sType]['plotType']:
+            plotData['Distribution'] = {}
+            plotData['Distribution'] = createDistribution(data, plotTypes[sType]['cols'], currentAnalysis)
+        if 'Correlation' in plotTypes[sType]['plotType']:
+            createCorrelation(data, plotTypes[sType]['cols'], currentAnalysis)
+        if 'FFT' in plotTypes[sType]['plotType']:
+            createFFT(data, plotTypes[sType]['cols'], currentAnalysis)
+
+    return json.dumps(plotData)
 
 
+def createDirForPlot(currentAnalysis):
+    if not os.path.exists(STATIC_DIR + '/plots/' + currentAnalysis.title + '/'):
+        os.makedirs(STATIC_DIR + '/plots/' + currentAnalysis.title + '/')
 
 
-
-
-def postAnalysis(project):
-
-    t = Analysis.objects.get(title='Analysis2')
-
-    dataFileObj = JsonDataFile.objects.get(name='derived', analysisID=t.id)
-    data = json.loads(dataFileObj.jsonData, object_hook=as_python_object)
-
+def createPowerCurve(data, cols, currentAnalysis):
     plt.switch_backend('agg')
     fg, ax = plt.subplots()
-
     plt.title('Power curve scatter')
-    # plotting.powerCurve(datafile.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
+    plotting.powerCurve(data.data, cols[0], cols[1], ax)
+    createDirForPlot(currentAnalysis)
+    plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/powerCurve.png')
 
-    plotting.powerCurve(data.data, 'normalisedWindSpeed', 'Power mean (kW)', ax)
-    mpld3.save_html(fg, 'templates/project/test.html')
-    print(STATIC_DIR)
-    plt.savefig(STATIC_DIR + '/test.png')
+def createCorrelation(data, cols, currentAnalysis):
+    plt.switch_backend('agg')
+    fg, ax = plt.subplots()
+    plt.title('Correlation')
+    plotting.correlation(data.data, cols[0], cols[1], ax)
+    createDirForPlot(currentAnalysis)
+    plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/correlation.png')
+
+
+def createDistribution(data, cols, currentAnalysis):
+    plt.switch_backend('agg')
+    fg, ax = plt.subplots()
+    plt.title('Distribution')
+    plotting.distribution(data.data, cols[0])
+    createDirForPlot(currentAnalysis)
+    plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/distribution.png')
+    return convertDescibeData(data.data[cols[0]].describe())
+
+
+
+def createFFT(data, cols, currentAnalysis):
+    plt.switch_backend('agg')
+    fg, ax = plt.subplots()
+    plt.title('FFT')
+    plotting.fft(data.data, cols[0], ax)
+    createDirForPlot(currentAnalysis)
+    plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/fft.png')
+
+
+def createPlotObj(name, analysisID=None, projectID=None, data=None):
+    jsonData, created = JsonDataFile.objects.get_or_create(name=name, analysisID=analysisID, projectID=projectID)
+    jsonData.jsonData = json.dumps(data, cls=PythonObjectEncoder)
+    jsonData.save()
+
+
+def convertDescibeData(data):
+    #An array is brought in
+
+    keyList = ['Count', 'Mean', 'Std', 'Min', '25%', '50%', '75%', 'Max']
+
+    dataDict = dict(zip(keyList, data))
+    return dataDict
+

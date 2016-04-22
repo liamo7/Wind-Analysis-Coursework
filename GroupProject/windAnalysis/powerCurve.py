@@ -38,6 +38,7 @@ class PowerCurve(object):
                 self.data.index, self.referenceAirDensity, rotorRadius)
 
     def getBinIndex(self, windSpeed):
+        print(self.data['bin'].index.values)
         return self.data[self.data['bin'] == windSpeed].index.values[0]
 
     def padded(self, truncateAtCutout=True):

@@ -152,7 +152,6 @@ app.controller('mainController', function($location, $http, $scope, projectServi
     function getProjects() {
         projectService.all().then(function(response) {
             $scope.projectList = response.data;
-            console.log($scope.projectList);
         });
     }
 
@@ -242,14 +241,10 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                     if($scope.currentAnalysis.title == $scope.analysesList[x].title) {
                         setSidebarType('analysisOpened');
                         $scope.currentAnalysis = $scope.analysesList[x];
-                        console.log("X");
-                        console.log($scope.currentAnalysis);
 
                         if($scope.currentAnalysis.analysisType == 1) {
                             projectService.getDataFiles('calculation', $scope.currentAnalysis['id']).then(function (response) {
                                 $scope.calculationRows = response.data;
-                                console.log($scope.calculationRows);
-                                console.log("JSWDA");
                             });
                         }
                     }
@@ -554,11 +549,16 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.syncedFile = null;
         $scope.dataFiles = {1: 'Synchronised', 2: 'Derived'};
 
+        $scope.addedPlots = {};
+        $scope.plotCount = 0;
+
+        $scope.plotData = {};
+
         //Table related
 
         $scope.calculationTypes = {'airDensity': 'airDensity', 'turbulenceIntensity': 'turbulenceIntensity', 'windShearExponentPolyfit': 'windShearExponentPolyfit',
-            'twoHeightWindShearExponent': 'twoHeightWindShearExponent', 'wind_direction_bin': 'bin', 'siteCorrectedWindSpeed': 'siteCorrectedWindSpeed', 'normalisedWindSpeed': 'normalisedWindSpeed',
-            'windSpeedBin': 'bin', 'hubHeightSpecificEnergyProduction': 'specificEnergyProduction', 'powerDeviation': 'powerDeviation'};
+            'twoHeightWindShearExponent': 'twoHeightWindShearExponent', 'wind_direction_bin': 'wind_direction_bin', 'siteCorrectedWindSpeed': 'siteCorrectedWindSpeed', 'normalisedWindSpeed': 'normalisedWindSpeed',
+            'windSpeedBin': 'windSpeedBin', 'hubHeightSpecificEnergyProduction': 'specificEnergyProduction', 'powerDeviation': 'powerDeviation'};
 
         $scope.kwargTypes = ['string', 'float', 'function', 'checkbox'];
 
@@ -568,7 +568,6 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.selectedKwargs = {};
         $scope.selectedCalculation = null;
         $scope.selectedColumnType = null;
-
         $scope.tableCount = 0;
 
     } init();
@@ -581,30 +580,24 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
     $scope.addCalculation = function (calc) {
         projectService.getProject($scope.currentProject.title).then(function(response) {
             $scope.currentProject = response.data;
-            console.log($scope.currentProject);
 
         });
         
     };
 
     $scope.addColumn = function(col) {
-        console.log($scope.selectedColumns.indexOf(col));
         if($scope.selectedColumns.indexOf(col) == -1)
             $scope.selectedColumns.push(col);
-
-        console.log($scope.selectedColumns.indexOf(col));
     };
     
     $scope.addKwarg = function(key, value) {
 
         $scope.selectedKwargs[key] = value;
-        console.log($scope.selectedKwargs);
 
     };
 
     $scope.removeTableRow = function (row) {
         delete $scope.calculationRows[row];
-        console.log(row);
     }
 
     $scope.addTableRow = function(calcType, cols, colType, kwargs) {
@@ -618,7 +611,6 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.calculationRows['row' + $scope.tableCount]['colType'] = $scope.columnTypes.indexOf(colType);
         $scope.calculationRows['row' + $scope.tableCount]['kwargs'] = kwargs;
 
-        console.log($scope.calculationRows);
         $scope.selectedColumns = [];
         $scope.selectedKwargs = {};
         $scope.selectedCalculation = null;
@@ -671,7 +663,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.calculationRows['row6']['kwargs'] = {};
 
         $scope.calculationRows['row7'] = {};
-        $scope.calculationRows['row7'].calcType = 'bin';
+        $scope.calculationRows['row7'].calcType = $scope.calculationTypes['windSpeedBin'];
         $scope.calculationRows['row7']['cols'] = ['normalisedWindSpeed'];
         $scope.calculationRows['row7']['colTypeString'] = 'DERIVED';
         $scope.calculationRows['row7']['colType'] = $scope.columnTypes.indexOf('DERIVED');
@@ -693,18 +685,31 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     };
 
-    $scope.createAnalysis = function(title, project, calculations, analysisType) {
+    $scope.addPlot = function (plotType, cols, data) {
+        $scope.plotCount++;
+        $scope.addedPlots['plot' + $scope.plotCount] = {};
+        $scope.addedPlots['plot' + $scope.plotCount].plotType = plotType;
+        $scope.addedPlots['plot' + $scope.plotCount].cols = cols;
+
+        $scope.selectedColumns = [];
+    };
+
+    $scope.createAnalysis = function(title, project, calculations, analysisType, plotTypes) {
         if($scope.currentProject != null) {
             return $http.post('/api/v1/analyses/', {
                 title: title,
                 calculations: calculations,
                 project: project,
-                typeAnalysis: analysisType
+                typeAnalysis: analysisType,
+                plotTypes: plotTypes
             }).then(function (response) {
                 if (response.data.success) {
                     $scope.loadAnalysis(response.config.data);
                     $location.path('/project/' + project.title + '/' + title);
                     toaster.pop('success', response.data.success);
+                    $scope.plotData = JSON.parse(response.data.plotData);
+                    console.log($scope.plotData);
+
                 } else {
                     toaster.pop('error', response.data.error);
                 }

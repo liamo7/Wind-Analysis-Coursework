@@ -40,14 +40,6 @@ def correlation(data, column1, column2, axes, showRegressionLine=True, showR2=Tr
     axes.plot(xl, yl, '--r')
 
 def distribution(data, column, norm=True, plotWeibull=False, upperLimit=1.0, title=''):
-    print('Dataset statistics')
-    print(data[column].describe())
-    print('Result of normaltest(): ' + str(normaltest(data[column])))
-    print('Result of Shapiro test for normality: ' + str(shapiro(data[column])))
-    if plotWeibull:
-        print('Calculated Weibull parameters:')
-        print(exponweib.fit(data[column], 1, 1))
-
     x = np.linspace(data[column].min(), data[column].max(), 1000)
     if plotWeibull:
         plt.plot(x, exponweib.pdf(x, *exponweib.fit(data[column], 1, 1)))

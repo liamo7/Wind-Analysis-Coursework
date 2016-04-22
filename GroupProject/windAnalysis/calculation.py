@@ -36,6 +36,14 @@ def bin(row, columnToBin, binWidth=1.0, zeroIsBinStart=True, roundBinBoundaryUp=
     return binValue
 
 
+def windSpeedBin(row, columnToBin, binWidth=1.0, zeroIsBinStart=True, roundBinBoundaryUp=True, binNameIsBinCentre=True):
+    bin(row, columnToBin, binWidth, zeroIsBinStart, roundBinBoundaryUp, binNameIsBinCentre)
+
+
+def wind_direction_bin(row, columnToBin, binWidth=1.0, zeroIsBinStart=True, roundBinBoundaryUp=True, binNameIsBinCentre=True):
+    bin(row, columnToBin, binWidth, zeroIsBinStart, roundBinBoundaryUp, binNameIsBinCentre)
+
+
 def siteCorrectedWindSpeed(row, windSpeed, windDirectionBin, factors={}):
     try:
         (slope, offset) = (factors[int(row[windDirectionBin])]['slope'], factors[int(row[windDirectionBin])]['offset'])

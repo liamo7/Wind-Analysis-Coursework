@@ -51,7 +51,6 @@ def dummy(project, files, calc):
         index = str(count)
         for key, value in calc['row' + str(index)]['kwargs'].items():
             if key == 'powerCurve':
-                print("POWERCURVE")
                 kwargDict['powerCurve'] = eval('project.turbine.' + calc['row' + index]['kwargs']['powerCurve'] + '()')
 
             if key == 'factors':
@@ -64,8 +63,6 @@ def dummy(project, files, calc):
             del calc['row' + index]['kwargs']['factors']
 
         kwargs = {**calc['row'+index]['kwargs'], **kwargDict}
-        print(kwargs)
-        print(str(calc['row' + index]['calcType']) + ' ' + str(calc['row' + index]['cols']) + ' ' + str(kwargs))
         combinedFile.addDerivedColumn(newColumn=calc['row' + index]['calcType'], functionToApply=eval('calculation.' + calc['row' + index]['calcType']), columnArguments=calc['row' + index]['cols'], columnType=ColumnType(calc['row' + index]['colType'] + 1), kwargs=kwargs, project=project)
 
     combinedFile.selectData()
@@ -76,15 +73,16 @@ def dummy(project, files, calc):
     # -------PostProcessing stage analysis---------------------#
     datafile = combinedFile
 
-    # measuredPowerCurve = project.makeMeasuredPowerCurve(datafile.data,'normalisedWindSpeed','Power mean (kW)','windSpeedBin')
-    # measuredPowerCurve.calculatePowerCoefficients(project.turbine.radius())
-    #
-    # meanWindSpeed = 7.5
-    #
-    # measuredPowerCurve.aepAdded(meanWindSpeed)
-    # #measuredPowerCurve.statistics()
-    # #print(measuredPowerCurve.aepMeasured(meanWindSpeed))
-    # #print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
+    print("HERE")
+    measuredPowerCurve = project.makeMeasuredPowerCurve(datafile.data,'normalisedWindSpeed','Power mean (kW)','windSpeedBin')
+    measuredPowerCurve.calculatePowerCoefficients(project.turbine.radius())
+    print("FA")
+    meanWindSpeed = 7.5
+
+    measuredPowerCurve.aepAdded(meanWindSpeed)
+    measuredPowerCurve.statistics()
+    print(measuredPowerCurve.aepMeasured(meanWindSpeed))
+    print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
 
     plt.switch_backend('agg')
     fg, ax = plt.subplots()

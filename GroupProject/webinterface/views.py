@@ -29,12 +29,11 @@ class TurbineViewSet(viewsets.ModelViewSet):
             turbine.addOneMetreHorizontalStripes()
             return Response(data={"success": "Turbine Created."})
 
-        return Response(data={"error": serializer.errors})
+        return Response(data={"error": serializer.errors['title'][0]})
 
 
 @api_view(['POST'])
 def getDataFile(request):
-    print(request.data)
 
     if request.data['type'] == 'combined':
         try:
@@ -53,13 +52,11 @@ def getDataFile(request):
     elif request.data['type'] == 'calculation':
         try:
             jsonData = JsonDataFile.objects.get(name='calculations', analysisID=request.data['dataID'])
-            print(jsonData.jsonData)
         except ObjectDoesNotExist:
             return Response(data={'error': 'Calculations not set'})
 
         calcTable = jsonData.jsonData
 
-        print(calcTable)
         return Response(data={'calculationRows': jsonData.jsonData})
 
 
@@ -76,14 +73,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         if turbine:
             if serializer.is_valid():
-                print(serializer.validated_data)
                 project = Project.objects.create(turbine=turbine, **serializer.validated_data)
                 project.save()
                 return Response(data={"success": "Project Created."})
         else:
             return Response(data={"error": "Not a valid turbine."})
 
-        return Response(data={"error": serializer.errors[0]})
+        return Response(data={"error": serializer.errors['title'][0]})
 
     def update(self, request, *args, **kwargs):
 
@@ -194,8 +190,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = AnalysisSerializer
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
-
         serializer = self.serializer_class(data=request.data)
 
         try:
@@ -203,8 +197,8 @@ class AnalysisViewSet(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             return Response(data={"error": "Project does not exist."})
 
-        print(request.data)
         calc = request.data['calculations']
+        plotTypes = request.data['plotTypes']
 
         if project:
             if serializer.is_valid():
@@ -237,19 +231,21 @@ class AnalysisViewSet(viewsets.ModelViewSet):
 
                     analysis.tableRows = tableCalcData
                     analysis.analysisType = 1
-                    print(analysis.tableRows)
                     analysis.save()
-                    print(analysis.analysisType)
                     processAnalysis(project, files, calc, analysis)
+                    return Response(data={"success": "Analysis has been created"})
+
 
                 elif request.data['typeAnalysis'] == 'Derived':
                     analysis.analysisType = 2
                     analysis.save()
-                    postAnalysis(project)
+                    response = postAnalysis(project, analysis, plotTypes)
 
-                return Response(data={"success": "Analysis has been created"})
+                    print(response)
 
-        return Response(data={"error": serializer.errors})
+                    return Response(data={"success": "Analysis has been created", 'plotData': response})
+
+        return Response(data={"error": serializer.errors['title'][0]})
 
     def list(self, request, title=None):
         analysis = Analysis.objects.get(title=title)
