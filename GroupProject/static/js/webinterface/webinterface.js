@@ -684,6 +684,16 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.calculationRows['row9']['kwargs'] = {'powerCurve': 'warrantedPowerCurve'};
 
     };
+    
+    $scope.fillPlots = function () {
+        $scope.addedPlots['plot1'] = {};
+        $scope.addedPlots['plot1'].plotType = 'Distribution';
+        $scope.addedPlots['plot1'].cols = ['Power mean (kW)', 'powerDeviation'];
+        
+        $scope.addedPlots['plot2'] = {};
+        $scope.addedPlots['plot2'].plotType = 'PowerCurve';
+        $scope.addedPlots['plot2'].cols = ['normalisedWindSpeed', 'Power mean (kW)'];
+    };
 
     $scope.addPlot = function (plotType, cols, data) {
         $scope.plotCount++;

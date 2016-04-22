@@ -114,10 +114,8 @@ class Turbine(models.Model):
                                  'windSpeedHeight': windSpeedHeight})
 
 
-        print(self.list)
         self.stripes = self.list
         self.save()
-        print(self.stripes)
 
 class JsonDataFile(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -289,19 +287,16 @@ class Datafile(object):
         df.columns = [name[0] for name in sorted([[column.name, column.positionInFile] for column in self.columns], key=lambda column: column[1])]
         self.data = df.apply(lambda x: pd.to_numeric(x), axis=0)
         #self.data = pd.to_numeric(df, errors='coerce')
-        print("Data loaded: " + self.filename)
 
     def saveToFile(self):
-        print(self.directory)
         if self.filename == 'derived.txt':
             if not os.path.exists(self.directory):
-                os.makedirs(MEDIA_ROOT + '/' + self.directory)
+                os.makedirs(MEDIA_ROOT + '/' + self.directory, exist_ok=True)
                 self.data.to_csv(MEDIA_ROOT + '/' + self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
             else:
                 self.data.to_csv(MEDIA_ROOT + '/' + self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
         else:
             self.data.to_csv(self.fullyQualifiedPath(), sep=self.columnSeparator, float_format='%.4f')
-        print("Data saved: " + self.filename)
 
     def clean(self):
         rowsBeforeClean = len(self.data)
@@ -312,7 +307,6 @@ class Datafile(object):
                 pass
         self.data.dropna(inplace=True)
         rowsAfterClean = len(self.data)
-        print(self.filename + ' - before clean: ' + str(rowsBeforeClean) + ' after clean: ' + str(rowsAfterClean) + ' (' + str(rowsBeforeClean-rowsAfterClean) + ' rows)')
 
     def applyInstrumentCalibrations(self, removeOriginalCalibration=False):
         for column in self.columns:
@@ -326,7 +320,6 @@ class Datafile(object):
         self.filename = newFileName
         self.directory = containingDirectory
         self.saveToFile()
-        print("Datafile saved as: " + self.filename)
 
     def selectorFactory(self, columnName, operator, value):
         try:
@@ -394,7 +387,6 @@ class Datafile(object):
 
     def addDerivedColumn(self, newColumn, functionToApply, columnArguments = (), kwargs = {}, measurementHeightValue=0.0, columnType=ColumnType.DERIVED, valueType=ValueType.DERIVED, project=None):
         # print('Adding ', newColumn, '... ', end=' ')
-        print(columnArguments)
         if 'row' in signature(functionToApply).parameters:
             self.data[newColumn] = self.data.apply(functionToApply, axis=1, args=columnArguments, **kwargs)
         else:

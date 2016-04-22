@@ -240,9 +240,6 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     analysis.analysisType = 2
                     analysis.save()
                     response = postAnalysis(project, analysis, plotTypes)
-
-                    print(response)
-
                     return Response(data={"success": "Analysis has been created", 'plotData': response})
 
         return Response(data={"error": serializer.errors['title'][0]})
