@@ -15,6 +15,8 @@
       <script src="{% static 'js/angular/angular-animate.js' %}"></script>
       <script src="{% static 'js/angular/ngDialog.js' %}"></script>
       <script src="{% static 'js/angular/toaster.min.js' %}"></script>
+      <script src="{% static 'js/angular/spin-min.js' %}"></script>
+      <script src="{% static 'js/angular/angular-spinner.js' %}"></script>
       <script src="{% static 'js/webinterface/webinterface.js' %}"></script>
    </head>
    <body ng-controller='mainController'>
@@ -63,6 +65,7 @@
          </div>
       </div>
       <toaster-container toaster-options="{'close-button': true}"></toaster-container>
+      <span us-spinner="{radius:30, width:8, length: 16}" spinner-key="spinner-1"></span>
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" ng-view>
       </div>
    </body>

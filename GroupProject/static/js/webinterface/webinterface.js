@@ -1,4 +1,4 @@
-var app = angular.module('webinterface', ['ngRoute', 'ngDialog', 'ngFileUpload', 'toaster', 'ngAnimate']);
+var app = angular.module('webinterface', ['ngRoute', 'ngDialog', 'ngFileUpload', 'toaster', 'ngAnimate', 'angularSpinner']);
 
 
 app.config(function($locationProvider, $interpolateProvider, $routeProvider, $httpProvider) {
@@ -101,7 +101,7 @@ app.factory('projectService', function($http, $routeParams) {
 });
 
 
-app.controller('mainController', function($location, $http, $scope, projectService, toaster) {
+app.controller('mainController', function($location, $http, $scope, projectService, toaster, usSpinnerService) {
 
     function init() {
         $scope.currentProject = null;
@@ -111,6 +111,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.currentAnalysis = null;
         $scope.combinedCols = null;
         $scope.plotTableData = null;
+        usSpinnerService.stop('spinner-1');
 
         getProjects();
         getTurbines();
@@ -265,21 +266,10 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         getAnalyses(project.title);
     };
 
-    $scope.imageExists = function(image, object, index) {
-        var img = new Image();
-        img.onload = function() {
-          object[index] = true;
-          $scope.$apply();
-        };
-        img.onerror = function() {
-          return false;
-        };
-        img.src = image;
-     };
 });
 
 
-app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService, Upload, toaster) {
+app.controller('projectCreationController', function ($location, $http, $scope, ngDialog, projectService, Upload, toaster, usSpinnerService) {
 
     function init() {
         $scope.columnNames = null;
@@ -289,6 +279,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         $scope.mastFileDict = {};
         $scope.lidarFileDict = {};
         $scope.powerFileDict = {};
+        usSpinnerService.stop('spinner-1');
 
         $scope.anemometersCols = [];
 
@@ -459,6 +450,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
 
     $scope.uploadFiles = function(mastFile, lidarFile, powerFile, siteCalibration) {
+        usSpinnerService.spin('spinner-1');
         Upload.upload({
                 url: '/api/v1/projects/' + $scope.currentProject.title + '/',
                 data: {
@@ -473,6 +465,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
                 },
                 method: 'put'
             }).then(function (response) {
+            usSpinnerService.stop('spinner-1');
                 if(response.data.success) {
                     $scope.combinedCols = response.data.combinedCols;
                     toaster.pop('success', response.data.success);
@@ -557,7 +550,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
 
 });
 
-app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog, projectService, toaster) {
+app.controller('analysisCreationController', function ($location, $http, $scope, ngDialog, projectService, toaster, usSpinnerService) {
 
     function init() {
         $scope.columnNames = [];
@@ -566,6 +559,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.derivedDataFiles = [];
         $scope.addedPlots = {};
         $scope.plotCount = 0;
+        usSpinnerService.stop('spinner-1');
 
         //Table related
 
@@ -756,6 +750,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     $scope.createAnalysis = function(title, project, calculations, analysisType, plotTypes) {
         if($scope.currentProject != null) {
+            usSpinnerService.spin('spinner-1');
             return $http.post('/api/v1/analyses/', {
                 title: title,
                 calculations: calculations,
@@ -764,10 +759,12 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
                 plotTypes: plotTypes
             }).then(function (response) {
                 if (response.data.success) {
+                    usSpinnerService.stop('spinner-1');
                     $scope.loadAnalysis(response.config.data);
                     $location.path('/project/' + project.title + '/' + title);
                     toaster.pop('success', response.data.success);
                 } else {
+                    usSpinnerService.stop('spinner-1');
                     toaster.pop('error', response.data.error);
                 }
             });
