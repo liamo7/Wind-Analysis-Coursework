@@ -242,7 +242,9 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                     if($scope.currentAnalysis.title == $scope.analysesList[x].title) {
                         setSidebarType('analysisOpened');
                         $scope.currentAnalysis = $scope.analysesList[x];
-                        console.log($scope.currentAnalysis);
+                        console.log($scope.currentAnalysis.plotDict);
+                        $scope.plotTableData = JSON.parse($scope.currentAnalysis.plotDict);
+                        console.log($scope.plotTableData);
 
                         if($scope.currentAnalysis.analysisType == 1) {
                             projectService.getDataFiles('calculation', $scope.currentAnalysis['id']).then(function (response) {
@@ -604,8 +606,9 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
     };
 
     $scope.addColumn = function(col) {
-        if($scope.selectedColumns.indexOf(col) == -1)
+        if($scope.selectedColumns.indexOf(col) == -1) {
             $scope.selectedColumns.push(col);
+        }
     };
     
     $scope.addKwarg = function(key, value) {
@@ -715,6 +718,31 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.addedPlots['plot2'] = {};
         $scope.addedPlots['plot2'].plotType = 'PowerCurve';
         $scope.addedPlots['plot2'].cols = ['normalisedWindSpeed', 'Power mean (kW)'];
+
+        $scope.addedPlots['plot3'] = {};
+        $scope.addedPlots['plot3'].plotType = 'Correlation';
+        $scope.addedPlots['plot3'].cols = ['airDensity', 'Mast - 80m Wind Speed Mean'];
+
+
+        $scope.addedPlots['plot4'] = {};
+        $scope.addedPlots['plot4'].plotType = 'Table';
+        $scope.addedPlots['plot4'].cols = ['Power mean (kW)'];
+
+        $scope.addedPlots['plot5'] = {};
+        $scope.addedPlots['plot5'].plotType = 'Table';
+        $scope.addedPlots['plot5'].cols = ['normalisedWindSpeed'];
+
+        $scope.addedPlots['plot6'] = {};
+        $scope.addedPlots['plot6'].plotType = 'Table';
+        $scope.addedPlots['plot6'].cols = ['Mast - 82m Wind Direction Mean'];
+
+        $scope.addedPlots['plot7'] = {};
+        $scope.addedPlots['plot7'].plotType = 'Table';
+        $scope.addedPlots['plot7'].cols = ['Mast - 80m Wind Speed Mean'];
+
+        $scope.addedPlots['plot8'] = {};
+        $scope.addedPlots['plot8'].plotType = 'Table';
+        $scope.addedPlots['plot8'].cols = ['Mast - 64m Wind Speed Mean'];
     };
 
     $scope.addPlot = function (plotType, cols, data) {
@@ -739,9 +767,6 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
                     $scope.loadAnalysis(response.config.data);
                     $location.path('/project/' + project.title + '/' + title);
                     toaster.pop('success', response.data.success);
-                    //$scope.plotTableData = JSON.parse(response.data.plotData);
-                    var s = response.data.plotData;
-                    $scope.plotTableData = {'mean': 43, 'max': 32};
                 } else {
                     toaster.pop('error', response.data.error);
                 }

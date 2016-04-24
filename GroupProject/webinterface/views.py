@@ -261,11 +261,12 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                             analysis.correlationPlot = True
 
                     analysis.analysisType = 2
-                    analysis.save()
                     response = postAnalysis(project, analysis, plotTypes, dataFile)
+                    analysis.plotDict = response
+                    analysis.save()
                     return Response(data={"success": "Analysis has been created", 'plotData': response})
 
-        return Response(data={"error": serializer.errors[0]})
+        return Response(data={"error": serializer.errors})
 
     def list(self, request, title=None):
         analysis = Analysis.objects.get(title=title)

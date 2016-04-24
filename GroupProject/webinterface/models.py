@@ -217,6 +217,8 @@ class Analysis(models.Model):
     fftPlot = models.NullBooleanField(null=True, blank=True)
     powerCurvePlot = models.NullBooleanField(null=True, blank=True)
 
+    plotDict = models.CharField(max_length=50000, blank=True, null=True)
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     class Meta:

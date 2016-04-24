@@ -97,6 +97,9 @@ def orderedWindShearExponent(data):
 
 def powerCurve(data, windSpeedBinColumn, powerColumn, axes, useColor=['b']):
     axes.scatter(data[windSpeedBinColumn], data[powerColumn], marker='.', s=1, color=useColor)
+    axes.set_ylabel(windSpeedBinColumn)
+    axes.set_xlabel(powerColumn)
+
 
 def shearExponent(data, threshold=10.0):
     plt.figure()

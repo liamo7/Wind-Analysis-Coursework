@@ -26,7 +26,11 @@ def processAnalysis(project, files, calc, analysis):
                               230: {'slope': 1.0211, 'offset': 0},
                               240: {'slope': 1.0063, 'offset': 0}}
 
-    derivedFile.applyInstrumentCalibrations(removeOriginalCalibration=True)
+    if project.siteCalibrationFile and project.siteCalibrationDict:
+        siteCalibrationFactors = project.siteCalibrationDict
+        derivedFile.applyInstrumentCalibrations(removeOriginalCalibration=True)
+    else:
+        derivedFile.applyInstrumentCalibrations(removeOriginalCalibration=False)
 
 
     for count, row in enumerate(calc):
@@ -64,21 +68,24 @@ def postAnalysis(project, currentAnalysis, plotTypes, dataFile):
 
     data = json.loads(dataFile.jsonData, object_hook=as_python_object)
 
-    plotData = {}
+    tableData = {}
+    count = 0
 
     for sType in plotTypes:
+        count+=1
 
         if 'PowerCurve' in plotTypes[sType]['plotType']:
             createPowerCurve(data, plotTypes[sType]['cols'], currentAnalysis)
         if 'Distribution' in plotTypes[sType]['plotType']:
-            plotData['Distribution'] = {}
-            plotData['Distribution'] = createDistribution(data, plotTypes[sType]['cols'], currentAnalysis)
+            createDistribution(data, plotTypes[sType]['cols'], currentAnalysis)
         if 'Correlation' in plotTypes[sType]['plotType']:
             createCorrelation(data, plotTypes[sType]['cols'], currentAnalysis)
         if 'FFT' in plotTypes[sType]['plotType']:
             createFFT(data, plotTypes[sType]['cols'], currentAnalysis)
+        if 'Table' in plotTypes[sType]['plotType']:
+            tableData['table' + str(count)] = convertDescibeData(data.data, plotTypes[sType]['cols'])
 
-    return json.dumps(plotData)
+    return json.dumps(tableData)
 
 
 def createDirForPlot(currentAnalysis):
@@ -97,7 +104,6 @@ def createPowerCurve(data, cols, currentAnalysis):
 def createCorrelation(data, cols, currentAnalysis):
     plt.switch_backend('agg')
     fg, ax = plt.subplots()
-    plt.title('Correlation')
     plotting.correlation(data.data, cols[0], cols[1], ax)
     createDirForPlot(currentAnalysis)
     plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/correlation.png')
@@ -106,21 +112,22 @@ def createCorrelation(data, cols, currentAnalysis):
 def createDistribution(data, cols, currentAnalysis):
     plt.switch_backend('agg')
     fg, ax = plt.subplots()
-    plt.title('Distribution')
     plotting.distribution(data.data, cols[0])
+    plt.title('Distribution - ' + cols[0])
     createDirForPlot(currentAnalysis)
     plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/distribution.png')
-    return convertDescibeData(data.data[cols[0]].describe())
+    #return convertDescibeData(data.data[cols[0]].describe())
 
 
 
 def createFFT(data, cols, currentAnalysis):
     plt.switch_backend('agg')
     fg, ax = plt.subplots()
-    plt.title('FFT')
+    plt.title('FFT - ' + cols[0])
     plotting.fft(data.data, cols[0], ax)
     createDirForPlot(currentAnalysis)
     plt.savefig(STATIC_DIR + '/plots/' + currentAnalysis.title +'/fft.png')
+    #return convertDescibeData(data.data[cols[0]].describe())
 
 
 def createPlotObj(name, analysisID=None, projectID=None, data=None):
@@ -129,8 +136,9 @@ def createPlotObj(name, analysisID=None, projectID=None, data=None):
     jsonData.save()
 
 
-def convertDescibeData(data):
+def convertDescibeData(data, cols):
     keyList = ['Count', 'Mean', 'Std', 'Min', '25%', '50%', '75%', 'Max']
-    dataDict = dict(zip(keyList, data))
+    dataDict = dict(zip(keyList, data[cols[0]].describe()))
+    dataDict['Col'] = cols[0]
     return dataDict
 

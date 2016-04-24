@@ -89,8 +89,15 @@
                <option>Distribution</option>
                <option>FFT</option>
                <option>PowerCurve</option>
+               <option>Table</option>
             </select>
             <button class="btn" type="button" ng-click="addPlot(selectedPlotType, selectedColumns, 1)">Add Plot</button>
+             <div ng-show="selectedPlotType=='PowerCurve' || selectedPlotType=='Correlation' || selectedPlotType == 'Distribution' || selectedPlotType == 'FFT' || selectedPlotType == 'Table'">
+               <select ng-model="selectedCol">
+                  <option ng-repeat="col in combinedCols">{[{col}]}</option>
+               </select>
+               <button class="btn" type="button" ng-click="addColumn(selectedCol)">Add Column</button>
+            </div>
             <table class="table table-fixed table-bordered">
             <thead>
                <tr>
@@ -105,12 +112,6 @@
                </tr>
             </tbody>
             </table>
-            <div ng-show="selectedPlotType=='PowerCurve' || selectedPlotType=='Correlation' || selectedPlotType == 'Distribution' || selectedPlotType == 'FFT'">
-               <select ng-model="selectedCol">
-                  <option ng-repeat="col in combinedCols">{[{col}]}</option>
-               </select>
-               <button class="btn" type="button" ng-click="addColumn(selectedCol)">Add Column</button>
-            </div>
          </div>
       </div>
       <div class="form-group">
