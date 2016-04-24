@@ -28,7 +28,7 @@ class AnalysisSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Analysis
-        fields = ('id', 'title', 'project', 'analysisType', 'derivedDataFile', 'description')
+        fields = ('id', 'title', 'project', 'analysisType', 'derivedDataFile', 'description', 'powerCurvePlot', 'fftPlot', 'distributionPlot', 'correlationPlot')
 
 
 class ColumnSerializer(serializers.ModelSerializer):

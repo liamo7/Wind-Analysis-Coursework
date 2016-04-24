@@ -53,30 +53,16 @@ def processAnalysis(project, files, calc, analysis):
     derivedFile.selectData()
     derivedFile.saveAs('derived.txt', project.getDerivedFilePath() + '/' + analysis.title + '/')
 
-    jsonDataFile, created = JsonDataFile.objects.get_or_create(name='derived', analysisID=analysis.id)
+    jsonDataFile, created = JsonDataFile.objects.get_or_create(name='derived', analysisID=analysis.id, projectID=project.id)
     jsonDataFile.jsonData = json.dumps(derivedFile, cls=PythonObjectEncoder)
     jsonDataFile.save()
     analysis.derivedDataFile = jsonDataFile
     analysis.save()
 
 
-def postAnalysis(project, currentAnalysis, plotTypes):
+def postAnalysis(project, currentAnalysis, plotTypes, dataFile):
 
-    analysis = Analysis.objects.get(title='Analysis2')
-
-    dataFileObj = JsonDataFile.objects.get(name='derived', analysisID=analysis.id)
-    data = json.loads(dataFileObj.jsonData, object_hook=as_python_object)
-
-    # # -------PostProcessing stage analysis---------------------#
-    # measuredPowerCurve = project.makeMeasuredPowerCurve(data.data, 'normalisedWindSpeed', 'Power mean (kW)', 'bin')
-    # measuredPowerCurve.calculatePowerCoefficients(project.turbine.radius())
-    #
-    # meanWindSpeed = 7.5
-    #
-    # measuredPowerCurve.aepAdded(meanWindSpeed)
-    # measuredPowerCurve.statistics()
-    # print(measuredPowerCurve.aepMeasured(meanWindSpeed))
-    # print(measuredPowerCurve.aepExtrapolated(meanWindSpeed))
+    data = json.loads(dataFile.jsonData, object_hook=as_python_object)
 
     plotData = {}
 
@@ -144,10 +130,7 @@ def createPlotObj(name, analysisID=None, projectID=None, data=None):
 
 
 def convertDescibeData(data):
-    #An array is brought in
-
     keyList = ['Count', 'Mean', 'Std', 'Min', '25%', '50%', '75%', 'Max']
-
     dataDict = dict(zip(keyList, data))
     return dataDict
 

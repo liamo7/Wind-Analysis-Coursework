@@ -108,3 +108,5 @@ fabric.properties
 
 #Best not to upload the media files
 media/
+
+static/plots/

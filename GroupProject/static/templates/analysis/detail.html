@@ -1,6 +1,9 @@
 <div ng-show="currentAnalysis.analysisType == 1" class="row">
+
     <div class="col-md-12">
        <h1 class="page-header text-center">{[{ currentAnalysis.title }]} Derived Calculations</h1>
+            {[{ plotData }]}
+
        <table class="table table-fixed table-bordered" >
                   <thead>
                      <tr>
@@ -28,31 +31,11 @@
     <div class="col-md-12">
        <h1 class="page-header text-center">{[{ currentAnalysis.title }]} Plots</h1>
 
-        <ul>
-            <li><img src="static/plots/{[{ currentAnalysis.title }]}/correlation.png"/></li>
-            <li><img src="static/plots/{[{ currentAnalysis.title }]}/distribution.png"/></li>
-            <li><img src="static/plots/{[{ currentAnalysis.title }]}/fft.png"/></li>
-            <li><img src="static/plots/{[{ currentAnalysis.title }]}/powerCurve.png"/></li>
+        <ul class="plotList">
+            <li ng-show="currentAnalysis.correlationPlot == true"><img src="static/plots/{[{ currentAnalysis.title }]}/correlation.png"/></li>
+            <li ng-show="currentAnalysis.distributionPlot == true"><img src="static/plots/{[{ currentAnalysis.title }]}/distribution.png"/></li>
+            <li ng-show="currentAnalysis.fftPlot == true"><img src="static/plots/{[{ currentAnalysis.title }]}/fft.png"/></li>
+            <li ng-show="currentAnalysis.powerCurvePlot == true"><img src="static/plots/{[{ currentAnalysis.title }]}/powerCurve.png"/></li>
         </ul>
-
-     <table class="table table-fixed table-bordered" >
-                      <thead>
-                         <tr>
-                            <th>Mean</th>
-                            <th>Standard Deviation</th>
-                            <th>Minimum</th>
-                             <th>Maximum</th>
-                            <th>25%</th>
-                            <th>50%</th>
-                             <th>75%</th>
-                         </tr>
-                      </thead>
-                      <tbody>sss
-                      <tr ng-repeat="(key, value) in plotData">
-                          <td>{[{ value }]}</td>
-                      </tr>
-                      </tbody>
-                   </table>
-        </div>
     </div>
 </div>

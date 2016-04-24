@@ -110,6 +110,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         $scope.currentProject = null;
         $scope.currentAnalysis = null;
         $scope.combinedCols = null;
+        $scope.plotTableData = null;
 
         getProjects();
         getTurbines();
@@ -241,6 +242,7 @@ app.controller('mainController', function($location, $http, $scope, projectServi
                     if($scope.currentAnalysis.title == $scope.analysesList[x].title) {
                         setSidebarType('analysisOpened');
                         $scope.currentAnalysis = $scope.analysesList[x];
+                        console.log($scope.currentAnalysis);
 
                         if($scope.currentAnalysis.analysisType == 1) {
                             projectService.getDataFiles('calculation', $scope.currentAnalysis['id']).then(function (response) {
@@ -261,7 +263,17 @@ app.controller('mainController', function($location, $http, $scope, projectServi
         getAnalyses(project.title);
     };
 
-
+    $scope.imageExists = function(image, object, index) {
+        var img = new Image();
+        img.onload = function() {
+          object[index] = true;
+          $scope.$apply();
+        };
+        img.onerror = function() {
+          return false;
+        };
+        img.src = image;
+     };
 });
 
 
@@ -443,6 +455,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
     }
 
 
+
     $scope.uploadFiles = function(mastFile, lidarFile, powerFile, siteCalibration) {
         Upload.upload({
                 url: '/api/v1/projects/' + $scope.currentProject.title + '/',
@@ -480,7 +493,7 @@ app.controller('projectCreationController', function ($location, $http, $scope, 
         $scope.fileData['colSets'] = {
                 'label': 'anemometers',
                 'columnSet': ['Mast - 80m Wind Speed Mean', 'Mast - 64m Wind Speed Mean', 'Mast - 35.0m Wind Speed Mean']
-            }
+            };
 
         var reader = new FileReader();
         reader.onload = function (e) {
@@ -548,11 +561,9 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.columnNames = [];
         $scope.syncedFile = null;
         $scope.dataFiles = {1: 'Synchronised', 2: 'Derived'};
-
+        $scope.derivedDataFiles = [];
         $scope.addedPlots = {};
         $scope.plotCount = 0;
-
-        $scope.plotData = {};
 
         //Table related
 
@@ -570,11 +581,18 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.selectedColumnType = null;
         $scope.tableCount = 0;
 
+        console.log("INIT");
+
     } init();
 
     projectService.getDataFiles('combined', $scope.currentProject['id']).then(function (response) {
         $scope.combinedCols = response.data.combinedFileCols;
         $scope.combinedCols.push.apply($scope.combinedCols, Object.keys($scope.calculationTypes));
+        $scope.derivedDataFiles.push(response.data.derivedDataAnalyses);
+        $scope.dataFiles = response.data.derivedDataAnalyses;
+        $scope.dataFiles[1] = 'Synchronised';
+
+        console.log($scope.dataFiles);
     });
 
     $scope.addCalculation = function (calc) {
@@ -598,7 +616,7 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
 
     $scope.removeTableRow = function (row) {
         delete $scope.calculationRows[row];
-    }
+    };
 
     $scope.addTableRow = function(calcType, cols, colType, kwargs) {
 
@@ -617,7 +635,11 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
         $scope.selectedColumnType = null;
 
     };
-    
+
+    $scope.removePlotRow = function (row) {
+        delete $scope.addedPlots[row];
+    };
+
     $scope.fillTable = function () {
       
         $scope.calculationRows['row1'] = {};
@@ -717,17 +739,15 @@ app.controller('analysisCreationController', function ($location, $http, $scope,
                     $scope.loadAnalysis(response.config.data);
                     $location.path('/project/' + project.title + '/' + title);
                     toaster.pop('success', response.data.success);
-                    $scope.plotData = JSON.parse(response.data.plotData);
-                    console.log($scope.plotData);
-
+                    //$scope.plotTableData = JSON.parse(response.data.plotData);
+                    var s = response.data.plotData;
+                    $scope.plotTableData = {'mean': 43, 'max': 32};
                 } else {
                     toaster.pop('error', response.data.error);
                 }
             });
         }
     };
-
-
 });
 
 

@@ -204,3 +204,7 @@ body {
 .inline-ul li {
   display: inline;
 }
+
+.plotList {
+  list-style: none;
+}

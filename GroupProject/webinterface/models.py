@@ -212,6 +212,11 @@ class Analysis(models.Model):
 
     tableRows = models.ForeignKey(JsonDataFile, null=True, blank=True)
 
+    correlationPlot = models.NullBooleanField(null=True, blank=True)
+    distributionPlot = models.NullBooleanField(null=True, blank=True)
+    fftPlot = models.NullBooleanField(null=True, blank=True)
+    powerCurvePlot = models.NullBooleanField(null=True, blank=True)
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     class Meta:

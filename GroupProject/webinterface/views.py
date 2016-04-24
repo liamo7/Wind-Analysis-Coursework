@@ -38,16 +38,21 @@ def getDataFile(request):
     if request.data['type'] == 'combined':
         try:
             jsonData = JsonDataFile.objects.get(name='combinedFile', projectID=request.data['dataID'])
-            #Get derived files from analyses within project
-            containingProject = Project.objects.get(id=request.data['dataID'])
-            analysisList = Analysis.objects.filter(project=containingProject)
+            derivedFiles = JsonDataFile.objects.filter(name='derived', projectID=request.data['dataID'])
+            print(derivedFiles)
+
+            analysisNames = {}
+            count=0
+            for i in derivedFiles:
+                analysisNames['derived' + str(count)] = Analysis.objects.get(id=i.analysisID).title
+                count+=1
 
         except ObjectDoesNotExist:
             return Response(data={'error': 'Combined File does not exist.'})
 
         combinedFileCols = json.loads(jsonData.jsonData, object_hook=as_python_object)
         colList = [x.name for x in combinedFileCols.columns]
-        return Response(data={'combinedFileCols': colList})
+        return Response(data={'combinedFileCols': colList, 'derivedDataAnalyses': analysisNames})
 
     elif request.data['type'] == 'calculation':
         try:
@@ -236,13 +241,31 @@ class AnalysisViewSet(viewsets.ModelViewSet):
                     return Response(data={"success": "Analysis has been created"})
 
 
-                elif request.data['typeAnalysis'] == 'Derived':
+                else:
+                    #Get derived file from analysis passed
+                    dAnalysis = Analysis.objects.get(title=request.data['typeAnalysis'])
+                    dataFile = JsonDataFile.objects.get(name='derived', analysisID=dAnalysis.id)
+
+
+                    for plot in plotTypes:
+                        if 'Distribution' in plotTypes[plot]['plotType']:
+                            analysis.distributionPlot = True
+
+                        if 'PowerCurve' in plotTypes[plot]['plotType']:
+                            analysis.powerCurvePlot = True
+
+                        if 'FFT' in plotTypes[plot]['plotType']:
+                            analysis.fftPlot = True
+
+                        if 'Correlation' in plotTypes[plot]['plotType']:
+                            analysis.correlationPlot = True
+
                     analysis.analysisType = 2
                     analysis.save()
-                    response = postAnalysis(project, analysis, plotTypes)
+                    response = postAnalysis(project, analysis, plotTypes, dataFile)
                     return Response(data={"success": "Analysis has been created", 'plotData': response})
 
-        return Response(data={"error": serializer.errors['title'][0]})
+        return Response(data={"error": serializer.errors[0]})
 
     def list(self, request, title=None):
         analysis = Analysis.objects.get(title=title)
